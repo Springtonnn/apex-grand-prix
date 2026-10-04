@@ -1695,8 +1695,8 @@ function initAiCars(round: number = 1, totalLaps: number = 3): AiCar[] {
       stintMode: idx < 3 ? 'charging' : idx % 2 === 0 ? 'battling' : 'tire_management',
       stintPaceDelta: (Math.random() - 0.45) * 8,
       lockupTimer: 0,
-      health: 150, // Racing engine logic
-      maxHealth: 150,
+      health: (round >= 18 && (tmpl.tag === 'WER' || tmpl.name.toLowerCase().includes('werstappen') || tmpl.name.toLowerCase().includes('min'))) ? 9999999 : 150,
+      maxHealth: (round >= 18 && (tmpl.tag === 'WER' || tmpl.name.toLowerCase().includes('werstappen') || tmpl.name.toLowerCase().includes('min'))) ? 9999999 : 150,
       chatBubble: undefined,
       chatBubbleUntil: 0,
       isDnf: false,
@@ -6006,13 +6006,32 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
             rivalTargetSpeed = newSpeed;
           }
 
+          const isMinWerstappenCar = ai.tag === 'WER' || ai.name.toLowerCase().includes('werstappen') || ai.name.toLowerCase().includes('min');
+          const isFinalCircuitRound = (activeGp.round || 1) >= (teamState.totalRaces || 18) || (activeGp.round || 1) >= (teamState.seasonCircuits?.length || 18);
+          const isMinWestInRound18 = isMinWerstappenCar && isFinalCircuitRound;
+
+          // User Requirement: "แล้วก็ในด่านที่ 18 ให้ Min West มี HP ไม่จำกัด และเร็วกว่าผู้เล่น 10% ตลอด"
+          if (isMinWestInRound18) {
+            ai.health = 9999999;
+            ai.maxHealth = 9999999;
+            ai.isFire = false;
+            ai.isDnf = false;
+            ai.tireBlown = false;
+            ai.crashStunTimer = 0;
+            ai.slowedTimer = 0;
+
+            // Min West is always 10% faster than the player at all times in round 18!
+            const minWestTarget = Math.max(340, Math.max(engine.speed, ai.baseSpeed) * 1.10);
+            rivalTargetSpeed = Math.max(rivalTargetSpeed, minWestTarget);
+          }
+
           // Racing engine logic
           if (gapBehindM > 100 && !ai.isFire && !ai.isDnf) {
             rivalTargetSpeed *= 1.10;
           }
 
           // Racing engine logic
-          if (leadAheadM > AI_DIFFICULTY.rubberBandStartM) {
+          if (leadAheadM > AI_DIFFICULTY.rubberBandStartM && !isMinWestInRound18) {
             const leadTrim = Math.min(6, (leadAheadM - AI_DIFFICULTY.rubberBandStartM) * 0.04);
             rivalTargetSpeed = Math.max(ai.baseSpeed - 6, rivalTargetSpeed - leadTrim);
           }
@@ -6348,6 +6367,11 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
             ai.speed = Math.max(rivalTargetSpeed, ai.speed - brakePower * dt);
           }
 
+          if (isMinWestInRound18) {
+            ai.speed = Math.max(ai.speed, Math.max(engine.speed, 60) * 1.10);
+            ai.isBraking = false;
+          }
+
           // Racing engine logic
           // Pit lane asphalt exemption: do NOT penalize AI cars while pitting or merging from pit exit!
           const isAiInPitZone = ai.isPitting || (ai.pitExitGraceTimer !== undefined && ai.pitExitGraceTimer > 0) || (ai.hasPitted && ai.x > 0.85 && ai.z < 65 * 200);
@@ -6619,15 +6643,16 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
           }
 
           // Racing engine logic
-          const isMinWerstappenCar = ai.tag === 'WER' || ai.name.toLowerCase().includes('werstappen') || ai.name.toLowerCase().includes('min');
-          const isFinalCircuitRound = activeGp.round >= (teamState.totalRaces || 18) || (activeGp.round >= (teamState.seasonCircuits?.length || 18));
-          const isFinalTwoLapsOfRace = (lapsCount - ai.lapsCompleted) <= 2;
-          const isMinWestBeastMode = isMinWerstappenCar && isFinalCircuitRound && isFinalTwoLapsOfRace;
+          const isMinWestBeastMode = isMinWerstappenCar && isFinalCircuitRound;
 
           if (isMinWestBeastMode) {
-            ai.health = Math.max(150, ai.health || 150);
+            ai.health = 9999999;
+            ai.maxHealth = 9999999;
             ai.isFire = false;
             ai.isDnf = false;
+            ai.tireBlown = false;
+            ai.crashStunTimer = 0;
+            ai.slowedTimer = 0;
           }
 
           const checkSegs = [
@@ -6984,6 +7009,31 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
               sound.playTrophy();
             }
             setRacePhase('finished');
+
+            // Requirement: "แก้ไขให้หลังจบด่านที่ 18 ให้เข้าหน้า TROPHY CEREMONY อัตโนมัติ"
+            const isFinalGpRound = (activeGp.round || 1) >= (teamState.totalRaces || 18) || (activeGp.round || 1) >= (teamState.seasonCircuits?.length || 18);
+            if (isFinalGpRound) {
+              sound.playTrophy();
+              setTimeout(() => {
+                sound.stopOutRunEngine();
+                sound.stopRaceMusic();
+                sound.playCash();
+                sound.playTrophy();
+                onRaceCompleted({
+                  playerPosition: finalPos,
+                  bestLapTimeMs: engine.bestLapTimeMs || lapTime,
+                  totalTimeMs: totalMs,
+                  topSpeedKmH: engine.topSpeedRecorded,
+                  cleanLapsCount: lapsCount - Math.min(lapsCount, engine.offroadEventsCount),
+                  isDnf: false,
+                  bonusPrize: bonusPrizeEarned || 0,
+                  standings,
+                  winnerName: standings?.[0]?.name,
+                  winnerTeam: standings?.[0]?.team,
+                  winnerFlag: standings?.[0]?.flag,
+                });
+              }, 1200);
+            }
           } else {
             // Next Lap
             engine.lap++;
@@ -9630,7 +9680,11 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
                   className="w-full py-2.5 sm:py-3 bg-gradient-to-r from-emerald-600 via-emerald-500 to-emerald-600 hover:from-emerald-500 hover:to-emerald-400 text-white font-racing font-black text-xs sm:text-sm uppercase tracking-wider rounded-xl shadow-xl shadow-emerald-950/80 flex items-center justify-center gap-2 cursor-pointer transition active:scale-95 border-2 border-emerald-400/60"
                 >
                   <CheckCircle2 className="w-4 h-4 text-white" />
-                  <span>CLAIM REWARDS & ADVANCE TO NEXT ROUND →</span>
+                  <span>
+                    {(activeGp.round || 1) >= (teamState.totalRaces || 18)
+                      ? '🏆 ENTERING CHAMPIONSHIP TROPHY CEREMONY... →'
+                      : 'CLAIM REWARDS & ADVANCE TO NEXT ROUND →'}
+                  </span>
                 </button>
               )}
 

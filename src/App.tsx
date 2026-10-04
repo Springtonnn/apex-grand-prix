@@ -444,6 +444,7 @@ export default function App() {
                 onChangeView={handleViewChange}
                 initialSubTab={championshipSubTab}
                 onRacingStateChange={handleRacingStateChange}
+                onOpenTrophyCeremony={() => setShowCelebrationCutscene(true)}
               />
             )}
 

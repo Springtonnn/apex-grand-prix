@@ -45,6 +45,7 @@ interface ChampionshipProps {
   onChangeView?: (view: 'main-menu' | 'team-management' | 'championship' | 'records' | 'help-tutorial') => void;
   initialSubTab?: 'race-day' | 'standings' | 'calendar' | 'auto-race';
   onRacingStateChange?: (isRacing: boolean, activeRound?: number) => void;
+  onOpenTrophyCeremony?: () => void;
 }
 
 interface SimDriverState {
@@ -69,6 +70,7 @@ export const Championship: React.FC<ChampionshipProps> = ({
   onChangeView,
   initialSubTab,
   onRacingStateChange,
+  onOpenTrophyCeremony,
 }) => {
   const circuits =
     teamState.seasonCircuits && teamState.seasonCircuits.length === 18
@@ -291,6 +293,7 @@ export const Championship: React.FC<ChampionshipProps> = ({
       if (isFinalRound) {
         sound.playTrophy();
         setShowCelebrationCutscene(true);
+        onOpenTrophyCeremony?.();
       } else {
         setTimeout(() => {
           raceSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -301,6 +304,7 @@ export const Championship: React.FC<ChampionshipProps> = ({
       if (isFinalRound) {
         sound.playTrophy();
         setShowCelebrationCutscene(true);
+        onOpenTrophyCeremony?.();
       }
     }
 
@@ -375,6 +379,7 @@ export const Championship: React.FC<ChampionshipProps> = ({
         setTimeout(() => {
           sound.playTrophy();
           setShowCelebrationCutscene(true);
+          onOpenTrophyCeremony?.();
         }, 150);
       }
 
