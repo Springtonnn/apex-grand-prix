@@ -205,7 +205,7 @@ export default function App() {
     }
   };
 
-  // Track active race status to freeze background during races
+  // Track active race status to freeze background during races ("ระหว่างแข่งห้ามเปลี่ยน")
   const [isRacing, setIsRacing] = useState<boolean>(false);
   const [racingRound, setRacingRound] = useState<number | undefined>(undefined);
 
@@ -268,7 +268,7 @@ export default function App() {
     setTeamSelectionSlotId(slotId);
   };
 
-  // Handle Resetting career after Bankruptcy & Homeless cutscene
+  // Handle Resetting career after Bankruptcy & Homeless cutscene ("เริ่มเกมใหม่ทั้งหมด")
   const handleResetFromBankruptcy = () => {
     sound.playCash();
     const currentActive = getActiveSlotId() || 1;
@@ -325,7 +325,7 @@ export default function App() {
     setHasStartedCareer(true);
   };
 
-  // Active stage round calculation for Championship & Race
+  // Active stage round calculation for Championship & Race ("เอ้างี้ ให้เวลาแข่ง ถ้าเราอยู่ด่านไหนในหน้า championship background เป็นภาพของด่านนั้นๆที่กำลังแข่งอยู่")
   const circuits =
     teamState.seasonCircuits && teamState.seasonCircuits.length === 18
       ? teamState.seasonCircuits
@@ -341,7 +341,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#040609] text-slate-100 flex flex-col font-sans selection:bg-red-600 selection:text-white relative overflow-x-hidden">
-      {/* Dynamic 10-Second Cycling Circuit Atmosphere Background (Cycles every 10s in menu, shows active circuit during championship/race) */}
+      {/* Dynamic 10-Second Cycling Circuit Atmosphere Background (เปลี่ยนทุก 10 วิในเมนู และหน้า championship/ระหว่างแข่งเป็นภาพด่านนั้นๆ) */}
       <CircuitAtmosphereBackground
         forcedRound={activeForcedRound}
         isRacing={isChampionshipOrRacing}
@@ -418,12 +418,12 @@ export default function App() {
                 onOpenTab={handleOpenTeamTab}
                 onReplayIntro={handleReplayIntro}
                 onOpenSaveSlots={handleOpenSaveSlots}
-                onOpenTrophyCeremony={() => setShowCelebrationCutscene(true)}
                 isIntroActive={showIntro}
                 onOpenChampionshipSubTab={(sub) => {
                   setChampionshipSubTab(sub);
                   handleViewChange('championship');
                 }}
+                onOpenTrophyCeremony={() => setShowCelebrationCutscene(true)}
               />
             )}
 
@@ -479,7 +479,7 @@ export default function App() {
             />
           )}
 
-          {/* Homeless & Bankrupt Cutscene Modal ("Wrecked car 20 times or P12 3 times, or dev test button) */}
+          {/* Homeless & Bankrupt Cutscene Modal ("ทำรถพังเกิน 20 ครั้ง หรือได้อันดับที่ 12 3 ครั้ง" หรือปุ่มเทส) */}
           {(showHomelessCutscene ||
             teamState.isBankruptHomeless ||
             (teamState.totalCarCrashesCount || 0) >= 20 ||

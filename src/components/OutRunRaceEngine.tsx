@@ -49,8 +49,11 @@ import {
 import { AI_DIFFICULTY } from '../data/aiDifficulty';
 export { AI_DIFFICULTY };
 
-// Racing engine logic
+// Player Car Durability Tuning ("เพิ่มเลือดให้ผู้เล่นอีกนิดหน่อย")
 export const PLAYER_MAX_HEALTH = 125;
+
+// Rival Car Durability Tuning: เพิ่มเลือดให้คู่แข่ง 50% ทุกคน (จาก 100 เป็น 150)
+export const RIVAL_MAX_HEALTH = 150;
 
 export interface OutRunStandingsDriver {
   pos: number;
@@ -149,7 +152,7 @@ export interface RoadsideSprite {
 }
 
 // Calculate accurate, tight collision hitboxes for ALL on-track & roadside objects
-// Racing engine logic
+// แก้ไข: ปรับ hitbox ให้สมจริง ไม่กว้างเกินจริง เพื่อป้องกันไม่ให้รถชนป้ายใหญ่/สิ่งกีดขวางโดยไม่สมควร
 export function getPropHitWidth(type: RoadsidePropType): number {
   switch (type) {
     case 'traffic_cone':
@@ -480,97 +483,9 @@ function drawRoadsideProp(
     }
 
     case 'grandstand': {
-      // Authentic Grand Prix Trackside Covered Grandstand packed with cheering spectators
-      const gW = 210;
-      const gH = 125;
-      const tierH = 22;
-
-      // Ground shadow
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
-      ctx.beginPath();
-      ctx.ellipse(0, 4, gW * 0.55, 14, 0, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Concrete Tiered Base
-      ctx.fillStyle = '#0f172a';
-      ctx.fillRect(-gW / 2, -gH * 0.70, gW, gH * 0.70);
-
-      // Spectator Tiers with cheering fans
-      const fanColors = ['#ef4444', '#3b82f6', '#eab308', '#22c55e', '#f97316', '#a855f7', '#ffffff', '#38bdf8'];
-      for (let t = 0; t < 3; t++) {
-        const tY = -gH * 0.20 - t * tierH;
-        // Concrete terrace step
-        ctx.fillStyle = t % 2 === 0 ? '#1e293b' : '#334155';
-        ctx.fillRect(-gW * 0.46, tY, gW * 0.92, 7);
-
-        // Crowds of spectators sitting & cheering
-        for (let fx = -gW * 0.42; fx <= gW * 0.42; fx += 14) {
-          const colIdx = Math.abs(Math.floor((fx + t * 31) * 7)) % fanColors.length;
-          // Body/Shirt
-          ctx.fillStyle = fanColors[colIdx];
-          ctx.fillRect(fx - 4, tY - 11, 8, 10);
-          // Head
-          ctx.fillStyle = '#fde047';
-          ctx.beginPath();
-          ctx.arc(fx, tY - 14, 3.5, 0, Math.PI * 2);
-          ctx.fill();
-
-          // Cheering raised arms or small waving flags
-          if ((Math.abs(Math.floor(fx)) % 28) === 0) {
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(fx + 2, tY - 22, 7, 5);
-            ctx.strokeStyle = '#94a3b8';
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            ctx.moveTo(fx + 2, tY - 13);
-            ctx.lineTo(fx + 2, tY - 22);
-            ctx.stroke();
-          }
-        }
-      }
-
-      // Front safety catch fence / barrier
-      ctx.fillStyle = '#dc2626';
-      ctx.fillRect(-gW / 2, -14, gW, 14);
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(-gW / 2, -9, gW, 4);
-
-      // Steel canopy pillars
-      ctx.strokeStyle = '#94a3b8';
-      ctx.lineWidth = 3.5;
-      [-gW * 0.44, -gW * 0.15, gW * 0.15, gW * 0.44].forEach((px) => {
-        ctx.beginPath();
-        ctx.moveTo(px, -14);
-        ctx.lineTo(px, -gH);
-        ctx.stroke();
-      });
-
-      // Angled Modern Architectural Canopy Roof
-      ctx.fillStyle = '#1e293b';
-      ctx.beginPath();
-      ctx.moveTo(-gW * 0.52, -gH + 12);
-      ctx.lineTo(gW * 0.52, -gH + 12);
-      ctx.lineTo(gW * 0.48, -gH - 16);
-      ctx.lineTo(-gW * 0.48, -gH - 16);
-      ctx.closePath();
-      ctx.fill();
-
-      // Canopy roof front glowing neon accent trim
-      ctx.strokeStyle = '#38bdf8';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(-gW * 0.52, -gH + 12);
-      ctx.lineTo(gW * 0.52, -gH + 12);
-      ctx.stroke();
-
-      // Sponsor signboard on roof front
-      ctx.fillStyle = '#090d16';
-      ctx.fillRect(-gW * 0.30, -gH + 1, gW * 0.60, 10);
-      ctx.fillStyle = '#facc15';
-      ctx.font = '900 8px "Rajdhani", sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(sprite.text || 'GRANDSTAND ARENA • FORMULA 1', 0, -gH + 6);
+      // "อัฒจันทร์ มันยังไม่ 3D อะ ให้ใช้หลักการเดียวกับการออกแบบถนน ในการออกแบบ อัฒจันทร์ ไม่ใช่เทคนิคของต้นไม้"
+      // Grandstands are rendered exclusively via continuous 3D polygon mesh along road segments
+      // in draw3DGrandstandSegment (road design principle), eliminating the tree/billboard sprite technique!
       break;
     }
 
@@ -1622,8 +1537,6 @@ export interface AiCar {
   lockupTimer?: number;
   health?: number;
   maxHealth?: number;
-  chatBubble?: string;
-  chatBubbleUntil?: number;
   isDnf?: boolean;
   isFire?: boolean;
   hasWetTires?: boolean;
@@ -1637,19 +1550,40 @@ export interface AiCar {
   counterAttackTimer?: number;
 }
 
+// Special boss rivals check: Min Werstappen, Louis Hammerton, Alex Alboon
+// Requirement: "ทำให้เลือด Min Werstappen, Louis Hammerton, Alex Alboon เป็นเป็นจำนวน 3,000 และมีความเร็ว มากกว่าเดิม 10%"
+export function isBossRival(driverId?: string, name?: string): boolean {
+  if (!driverId && !name) return false;
+  return (
+    driverId === 'ai-wer' ||
+    driverId === 'ai-ham' ||
+    driverId === 'ai-abn' ||
+    name === 'Min Werstappen' ||
+    name === 'Louis Hammerton' ||
+    name === 'Alex Alboon'
+  );
+}
+
+export function getRivalMaxHealth(driverId?: string, name?: string): number {
+  if (isBossRival(driverId, name)) {
+    return 3000;
+  }
+  return RIVAL_MAX_HEALTH; // 150
+}
+
 export const PIT_STOP_TASKS: { th: string; en: string; key: string }[] = [
-  { th: 'FL Wheel Nut', en: 'FL Wheel Nut', key: 'FL' },
-  { th: 'FR Wheel Nut', en: 'FR Wheel Nut', key: 'FR' },
-  { th: 'Front Jack Lift', en: 'Front Jack Lift', key: 'JACK-F' },
-  { th: 'Front Wing Angle', en: 'Front Wing Angle', key: 'AERO' },
-  { th: 'RL Wheel Nut', en: 'RL Wheel Nut', key: 'RL' },
-  { th: 'RR Wheel Nut', en: 'RR Wheel Nut', key: 'RR' },
-  { th: 'Rear Jack Release', en: 'Rear Jack Release', key: 'JACK-R' },
-  { th: 'Torque Check', en: 'Torque Check', key: 'TORQUE' },
-  { th: 'Visor & Airbox Tearoff', en: 'Visor & Airbox Tearoff', key: 'VISOR' },
-  { th: 'Tyre Pressure Sensor', en: 'Tyre Pressure Sensor', key: 'PSI' },
-  { th: 'Lollipop Green GO', en: 'Lollipop Green GO', key: 'GO' },
-  { th: 'Pit Safe Release Sensor', en: 'Pit Safe Release Sensor', key: 'RELEASE' },
+  { th: 'ขันน็อตล้อหน้าซ้าย FL', en: 'FL Wheel Nut', key: 'FL' },
+  { th: 'ขันน็อตล้อหน้าขวา FR', en: 'FR Wheel Nut', key: 'FR' },
+  { th: 'แม่แรงหน้ายกลอย Jack-F', en: 'Front Jack Lift', key: 'JACK-F' },
+  { th: 'ปรับองศาปีกหน้า Aero Flap', en: 'Front Wing Angle', key: 'AERO' },
+  { th: 'ขันน็อตล้อหลังซ้าย RL', en: 'RL Wheel Nut', key: 'RL' },
+  { th: 'ขันน็อตล้อหลังขวา RR', en: 'RR Wheel Nut', key: 'RR' },
+  { th: 'แม่แรงหลังเซตปล่อย Jack-R', en: 'Rear Jack Release', key: 'JACK-R' },
+  { th: 'ตรวจเช็กแรงบิดปืนลม Torque', en: 'Torque Check', key: 'TORQUE' },
+  { th: 'ทำความสะอาดช่องลม Visor', en: 'Visor & Airbox Tearoff', key: 'VISOR' },
+  { th: 'ตรวจเช็กแรงดันลมยาง Tyre PSI', en: 'Tyre Pressure Sensor', key: 'PSI' },
+  { th: 'สัญญาณไฟเขียวปล่อยรถ GO!', en: 'Lollipop Green GO', key: 'GO' },
+  { th: 'เซ็นเซอร์ออกตัว Pit Release', en: 'Pit Safe Release Sensor', key: 'RELEASE' },
 ];
 
 export function getPitQteArrowCount(pitCrewSkill: number): number {
@@ -1676,16 +1610,19 @@ export function generatePitQteSequence(arrowCount: number): ('UP' | 'DOWN' | 'LE
 }
 
 export const RIVAL_AI_TEMPLATES = [
-  { id: 'ai-wer', name: 'Min Werstappen', tag: 'WER', teamName: 'Red Bullion Racing', flag: '🇳🇱', number: 1, primaryColor: '#1e3a8a', secondaryColor: '#dc2626', baseSpeed: 300, aggression: 0.98, personalityKey: 'apex_predator' as const },
+  // Min Werstappen: Base speed +10% (300 -> 330)
+  { id: 'ai-wer', name: 'Min Werstappen', tag: 'WER', teamName: 'Red Bullion Racing', flag: '🇳🇱', number: 1, primaryColor: '#1e3a8a', secondaryColor: '#dc2626', baseSpeed: 330, aggression: 0.98, personalityKey: 'apex_predator' as const },
   { id: 'ai-clk', name: 'Charl Leclerk', tag: 'CLK', teamName: 'Scuderia Cavallo', flag: '🇲🇨', number: 16, primaryColor: '#dc2626', secondaryColor: '#000000', baseSpeed: 299, aggression: 0.96, personalityKey: 'corner_virtuoso' as const },
   { id: 'ai-mor', name: 'Londo Morris', tag: 'MOR', teamName: 'MacLaren Racing', flag: '🇬🇧', number: 4, primaryColor: '#f97316', secondaryColor: '#0284c7', baseSpeed: 298, aggression: 0.95, personalityKey: 'slingshot_hunter' as const },
-  { id: 'ai-ham', name: 'Louis Hammerton', tag: 'HAM', teamName: 'Silver Arrow GP', flag: '🇬🇧', number: 44, primaryColor: '#94a3b8', secondaryColor: '#00d2be', baseSpeed: 297, aggression: 0.93, personalityKey: 'legendary_precision' as const },
+  // Louis Hammerton: Base speed +10% (297 -> 327)
+  { id: 'ai-ham', name: 'Louis Hammerton', tag: 'HAM', teamName: 'Silver Arrow GP', flag: '🇬🇧', number: 44, primaryColor: '#94a3b8', secondaryColor: '#00d2be', baseSpeed: 327, aggression: 0.93, personalityKey: 'legendary_precision' as const },
   { id: 'ai-alz', name: 'Ferdinand Alonzy', tag: 'ALZ', teamName: 'Aston Sovereign F1', flag: '🇪🇸', number: 14, primaryColor: '#064e3b', secondaryColor: '#a3e635', baseSpeed: 296, aggression: 0.94, personalityKey: 'iron_wall' as const },
   { id: 'ai-rus', name: 'Jorge Rustell', tag: 'RUS', teamName: 'Silver Arrow GP', flag: '🇬🇧', number: 63, primaryColor: '#64748b', secondaryColor: '#00d2be', baseSpeed: 295, aggression: 0.90, personalityKey: 'tenacious_fighter' as const },
   { id: 'ai-snz', name: 'Carlo Sainzo', tag: 'SNZ', teamName: 'Scuderia Cavallo', flag: '🇪🇸', number: 55, primaryColor: '#b91c1c', secondaryColor: '#facc15', baseSpeed: 295, aggression: 0.91, personalityKey: 'smooth_operator' as const },
   { id: 'ai-pas', name: 'Oskar Pastri', tag: 'PAS', teamName: 'MacLaren Racing', flag: '🇦🇺', number: 81, primaryColor: '#ea580c', secondaryColor: '#0284c7', baseSpeed: 294, aggression: 0.89, personalityKey: 'ice_cold' as const },
   { id: 'ai-gas', name: 'Piero Gaslynn', tag: 'GAS', teamName: 'Alpina Blue GP', flag: '🇫🇷', number: 10, primaryColor: '#0284c7', secondaryColor: '#f43f5e', baseSpeed: 292, aggression: 0.86, personalityKey: 'underdog_raider' as const },
-  { id: 'ai-abn', name: 'Alex Alboon', tag: 'ABN', teamName: 'Wilkins Heritage F1', flag: '🇹🇭', number: 23, primaryColor: '#1d4ed8', secondaryColor: '#38bdf8', baseSpeed: 291, aggression: 0.85, personalityKey: 'straight_line_rocket' as const },
+  // Alex Alboon: Base speed +10% (291 -> 320)
+  { id: 'ai-abn', name: 'Alex Alboon', tag: 'ABN', teamName: 'Wilkins Heritage F1', flag: '🇹🇭', number: 23, primaryColor: '#1d4ed8', secondaryColor: '#38bdf8', baseSpeed: 320, aggression: 0.85, personalityKey: 'straight_line_rocket' as const },
   { id: 'ai-hlk', name: 'Niko Hulken', tag: 'HLK', teamName: 'Haas Apex Team', flag: '🇩🇪', number: 27, primaryColor: '#f1f5f9', secondaryColor: '#dc2626', baseSpeed: 290, aggression: 0.84, personalityKey: 'veteran_battler' as const },
 ];
 
@@ -1694,7 +1631,7 @@ function initAiCars(round: number = 1, totalLaps: number = 3): AiCar[] {
   const roundIdx = Math.min(18, Math.max(1, round)) - 1; // 0 to 17
   const midLap = totalLaps <= 2 ? 1 : Math.floor(totalLaps / 2) + 1;
 
-  // Racing engine logic
+  // "รถคันอื่นๆก็มีโอกาสพลาด pits ได้เช่นกัน แต่น้อย"
   const missPitCandidateIdx = (round * 5 + 3) % 11;
   const isRaceWithMissedPit = Math.random() < 0.28;
 
@@ -1783,10 +1720,8 @@ function initAiCars(round: number = 1, totalLaps: number = 3): AiCar[] {
       stintMode: idx < 3 ? 'charging' : idx % 2 === 0 ? 'battling' : 'tire_management',
       stintPaceDelta: (Math.random() - 0.45) * 8,
       lockupTimer: 0,
-      health: (round >= 18 && (tmpl.tag === 'WER' || tmpl.name.toLowerCase().includes('werstappen') || tmpl.name.toLowerCase().includes('min'))) ? 9999999 : 150,
-      maxHealth: (round >= 18 && (tmpl.tag === 'WER' || tmpl.name.toLowerCase().includes('werstappen') || tmpl.name.toLowerCase().includes('min'))) ? 9999999 : 150,
-      chatBubble: undefined,
-      chatBubbleUntil: 0,
+      health: getRivalMaxHealth(tmpl.id, tmpl.name),
+      maxHealth: getRivalMaxHealth(tmpl.id, tmpl.name),
       isDnf: false,
       isFire: false,
       hasWetTires: false,
@@ -2064,7 +1999,7 @@ function drawAiCar(
     }
   }
 
-  // Racing engine logic
+  // AI NITRO BOOST AFTERBURNER FLAMES ("ให้ผู้แข่งขันสามรรถใช้ nitro ได้เช่นกันด้วย")
   if (car.nitroActive) {
     const flameLen = 32 + Math.random() * 24;
     const flameW = 14 + Math.random() * 6;
@@ -2092,9 +2027,10 @@ function drawAiCar(
     }
   }
 
-  // Racing engine logic
+  // Billowing progressive smoke plumes and raging fire flames ("ยิ่งใกล้พังยิ่งมีควันเยอะขึ้น", "คู่แข่งก็เป็นได้เหมือนกัน", "ถ้ารถคู่แข่งพังก็ให้ขึ้นไฟไหม้ และอยู่เฉยๆ")
   const isAiOnFire = !!(car.isFire || (car.health !== undefined && car.health <= 0));
-  const aiHealth = car.health !== undefined ? car.health : 100;
+  const carMaxHp = car.maxHealth || getRivalMaxHealth(car.id, car.name);
+  const aiHealth = car.health !== undefined ? car.health : carMaxHp;
   const isStunnedOrSlowed = !!((car.crashStunTimer && car.crashStunTimer > 0) || (car.slowedTimer && car.slowedTimer > 0));
 
   if (isAiOnFire) {
@@ -2118,7 +2054,7 @@ function drawAiCar(
       ctx.beginPath();
       ctx.moveTo(f.x - f.w / 2, f.yOff);
       ctx.quadraticCurveTo(f.x + (Math.sin(timestamp * 0.08 + f.x) * 8), f.yOff - f.h * 0.6, f.x, f.yOff - f.h);
-      ctx.quadraticCurveTo(f.x - (Math.sin(timestamp * 0.08 + f.x) * 8), f.yOff - f.h * 0.6, f.x + f.w / 2, f.yOff);
+      ctx.quadraticCurveTo(f.x - (Math.sin(timestamp * 0.08 + f.x) * 8), f.yOff - f.h * 0.6, f.x, f.yOff - f.h);
       ctx.closePath();
       ctx.fill();
     });
@@ -2145,16 +2081,16 @@ function drawAiCar(
       ctx.arc(eX, eY, 2.5 * (1 - ePhase * 0.5), 0, Math.PI * 2);
       ctx.fill();
     }
-  } else if (aiHealth < 80 || isStunnedOrSlowed) {
-    // Racing engine logic
-    const puffCount = aiHealth < 25 ? 5 : aiHealth < 50 ? 4 : isStunnedOrSlowed ? 3 : 2;
-    const smokeDarkness = aiHealth < 25 ? '15, 23, 42' : aiHealth < 50 ? '30, 41, 59' : '71, 85, 105';
-    const smokeOpacity = aiHealth < 25 ? 0.88 : aiHealth < 50 ? 0.75 : 0.55;
+  } else if (aiHealth < (carMaxHp * 0.8) || isStunnedOrSlowed) {
+    // Progressive smoke plumes based on damage: ("ยิ่งใกล้พังยิ่งมีควันเยอะขึ้น")
+    const puffCount = aiHealth < (carMaxHp * 0.25) ? 5 : aiHealth < (carMaxHp * 0.5) ? 4 : isStunnedOrSlowed ? 3 : 2;
+    const smokeDarkness = aiHealth < (carMaxHp * 0.25) ? '15, 23, 42' : aiHealth < (carMaxHp * 0.5) ? '30, 41, 59' : '71, 85, 105';
+    const smokeOpacity = aiHealth < (carMaxHp * 0.25) ? 0.88 : aiHealth < (carMaxHp * 0.5) ? 0.75 : 0.55;
 
     for (let s = 0; s < puffCount; s++) {
       const sPhase = (timestamp * 0.003 + s * (1 / puffCount)) % 1;
-      const sRad = (aiHealth < 25 ? 14 : 10) + sPhase * (aiHealth < 25 ? 28 : 20);
-      const sY = -15 - sPhase * (aiHealth < 25 ? 55 : 38);
+      const sRad = (aiHealth < (carMaxHp * 0.25) ? 14 : 10) + sPhase * (aiHealth < (carMaxHp * 0.25) ? 28 : 20);
+      const sY = -15 - sPhase * (aiHealth < (carMaxHp * 0.25) ? 55 : 38);
       const sX = (s % 2 === 0 ? 1 : -1) * sPhase * 18;
       ctx.fillStyle = `rgba(${smokeDarkness}, ${smokeOpacity * (1 - sPhase)})`;
       ctx.beginPath();
@@ -2163,7 +2099,7 @@ function drawAiCar(
     }
 
     // Fiery ember sparks for heavily damaged rival cars (< 30% health)
-    if (aiHealth < 30 && Math.random() < 0.4) {
+    if (aiHealth < (carMaxHp * 0.3) && Math.random() < 0.4) {
       ctx.fillStyle = '#f97316';
       ctx.beginPath();
       ctx.arc((Math.random() - 0.5) * 22, -18 - Math.random() * 25, 2.5, 0, Math.PI * 2);
@@ -2277,7 +2213,7 @@ function drawAiCar(
 }
 
 // =============================================================================
-// Racing engine logic
+// CONFETTI CELEBRATION (ฉลองเมื่อเข้าเส้นชัย 3 อันดับแรก)
 // 60FPS Metallic Fluttering Ticker-Tape Particles & Podiums
 // =============================================================================
 interface ConfettiParticle {
@@ -3006,7 +2942,7 @@ export const HudSpeedometer = React.memo<{
           </div>
           {nitroDepleted && (
             <div className="text-[7px] text-amber-400/90 font-bold tracking-tight text-center mt-0.5">
-              🔒 Wait for 100% reload before using nitro
+              🔒 รอรีโหลดเต็ม 100% ถึงจะใช้ได้
             </div>
           )}
         </div>
@@ -3045,7 +2981,7 @@ export const HudSpeedometer = React.memo<{
         {isAquaplaning && (
           <div className="text-center py-1 px-1.5 rounded-lg text-[9px] font-mono font-black bg-cyan-600 text-white border border-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.9)] animate-pulse flex items-center justify-center gap-1">
             <span>🌊</span>
-            <span>SLIPPING / AQUAPLANING</span>
+            <span>SLIPPING / ลื่น!</span>
           </div>
         )}
       </div>
@@ -3112,46 +3048,46 @@ export const HudCenterWarnings = React.memo<{
         </div>
       )}
 
-      {/* Racing Engine System */}
+      {/* 2. Flat Tire Major Alert ("แจ้งเตือนว่ายางแตกใหญ่กว่านี้ชัดเจนกว่านี้") */}
       {tireBlown && (
         <div className="px-4 py-2 sm:px-6 sm:py-2.5 rounded-2xl bg-gradient-to-r from-red-700 via-rose-700 to-red-700 text-white font-racing font-black text-sm sm:text-base tracking-wide border-2 border-yellow-400 shadow-[0_0_40px_rgba(239,68,68,1)] flex items-center gap-3 animate-pulse">
           <span className="text-2xl sm:text-3xl animate-bounce">💥</span>
           <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2.5 leading-tight text-center sm:text-left">
             <span className="text-yellow-300 uppercase tracking-wider font-mono text-sm sm:text-base">
-              💥 FLAT TIRE!
+              💥 FLAT TIRE • ยางแตก!
             </span>
             <span className="text-xs sm:text-sm text-red-100 font-bold">
-              Speed reduced 50% • Veer right into PIT for fresh tires!
+              ความเร็วลดลง 50% • รีบเลี้ยวขวาเข้า PIT เปลี่ยนยางด่วน!
             </span>
           </div>
         </div>
       )}
 
-      {/* Racing Engine System */}
+      {/* 3. Slipping / Aquaplaning Alert ("รวมถึงลื่นด้วย") */}
       {isAquaplaning && (
         <div className="px-4 py-2 sm:px-6 sm:py-2.5 rounded-2xl bg-gradient-to-r from-sky-600 via-cyan-600 to-blue-600 text-white font-racing font-black text-xs sm:text-sm tracking-wide border-2 border-cyan-200 shadow-[0_0_35px_rgba(6,182,212,0.95)] flex items-center gap-3 animate-pulse">
           <span className="text-xl sm:text-2xl">🌊</span>
           <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2 leading-tight text-center sm:text-left">
             <span className="text-yellow-200 uppercase tracking-wider font-mono text-xs sm:text-sm">
-              ⚠️ AQUAPLANING • SLIPPING!
+              ⚠️ AQUAPLANING • รถลื่นไถล!
             </span>
             <span className="text-[11px] sm:text-xs text-cyan-100 font-bold">
-              Standing water • Loss of traction! Slow down or pit for WET tires
+              ถนนเปียกน้ำ ยางสูญเสียการยึดเกาะ • ชะลอความเร็วหรือเข้า PIT เปลี่ยนยาง WET
             </span>
           </div>
         </div>
       )}
 
-      {/* Racing Engine System */}
+      {/* 4. Large Pit Window Countdown Banner ("ให้ข้อความเข้า pits ใหญ่กว่านี้") */}
       {showPitWindowPrompt && (
         <div className="px-3.5 py-1.5 sm:px-6 sm:py-2.5 rounded-2xl bg-gradient-to-r from-red-600 via-rose-600 to-red-600 text-white font-racing font-black text-xs sm:text-base tracking-wide border-2 border-red-300 shadow-[0_0_40px_rgba(239,68,68,1)] flex items-center gap-2 sm:gap-3 animate-pulse max-w-[92vw] sm:max-w-xl mx-auto">
           <span className="text-amber-300 font-mono font-black text-sm sm:text-2xl animate-bounce">▶▶▶</span>
           <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2 leading-tight text-center sm:text-left truncate">
             <span className="text-yellow-300 uppercase tracking-wider font-mono text-xs sm:text-base truncate">
-              BOX THIS LAP • PIT ENTRY
+              BOX THIS LAP • เข้า PIT
             </span>
             <span className="text-[10px] sm:text-sm text-white font-bold truncate">
-              Stay right to enter PIT lane
+              เตรียมชิดขวาเพื่อเลี้ยวเข้า PIT
             </span>
           </div>
           <div className="px-2 py-0.5 sm:px-3 sm:py-1 rounded-xl bg-black/85 text-amber-300 font-mono text-xs sm:text-base font-black border-2 border-amber-400 shadow-inner shrink-0 ml-auto">
@@ -3287,16 +3223,16 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
     setHudIsRaining(nextRain);
     if (nextRain) {
       sound.playThunderRain();
-      setHudRainAlert('🌧️ SUDDEN DOWNPOUR! Heavy rain has begun • Track is slick and slippery! Box for WET TIRES!');
-      setPitToastMessage('🌧️ Heavy downpour started! Enter PIT for WET TIRES');
+      setHudRainAlert('🌧️ SUDDEN DOWNPOUR! ฝนเริ่มตกหนักกลางเกม • แทร็กลื่น เลี้ยวจะลื่นตกข้างทางง่ายขึ้น รีบเข้า PIT เพื่อเปลี่ยนยาง WET TIRES!');
+      setPitToastMessage('🌧️ ฝนเริ่มตกหนัก! รีบเข้า PIT เปลี่ยนยาง WET TIRES');
       setTimeout(() => setHudRainAlert(null), 6500);
     } else {
-      setPitToastMessage('☀️ Rain has stopped! Track is drying up');
+      setPitToastMessage('☀️ ฝนหยุดตกแล้ว แทร็กเริ่มแห้ง');
       setTimeout(() => setPitToastMessage(null), 3000);
     }
   }, []);
 
-  // Racing engine logic
+  // Restart this round from start grid ("ถ้าแพ้ ก็ให้ต้องแข่งด่านนั้นใหม่")
   const restartRace = useCallback(() => {
     sound.stopOutRunEngine();
     sound.stopRaceMusic();
@@ -3794,11 +3730,11 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
             offset: (segIdx / 22) % 2 === 0 ? -2.35 : 2.35,
             scale: 1.0,
           });
-        } else if (segIdx % 16 === 8) {
-          // FIA Marshal Posts with waving safety flags alternating sides
+        } else if (segIdx % 28 === 18) {
+          // FIA Marshal Posts with waving safety flags
           sprites.push({
             type: 'f1_marshal_post',
-            offset: (segIdx / 16) % 2 === 0 ? -2.15 : 2.15,
+            offset: 2.15,
             scale: 0.95,
           });
         }
@@ -3894,17 +3830,10 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
       segments[0].sprites = [{ type: 'drs_gantry', offset: 0, scale: 1.0, text: 'START / FINISH' }];
     }
 
-    // Mark Start/Finish Straight and major spectator arenas across the circuit with 3D Polygonal Grandstands
-    const isYasMarinaFinal = (activeGp.round || 1) >= 18 || (activeGp.id && activeGp.id.includes('18'));
+    // Mark Start/Finish Straight segments with Continuous 3D Polygonal Grandstands
+    // ("ให้อัฒจันทร์ render มองเห็นได้ไกลมากกว่านี้ แบบชัดขึ้นจากระยะไกลของผู่แข่ง")
     for (let i = 0; i < segments.length; i++) {
-      const segRatio = i / segments.length;
-      const isStartStraight = (i >= segments.length - 130 || i <= 95);
-      const isArena1 = (segRatio >= 0.16 && segRatio <= 0.28);
-      const isArena2 = (segRatio >= 0.44 && segRatio <= 0.56);
-      const isArena3 = (segRatio >= 0.72 && segRatio <= 0.88);
-      const isYasMarinaExtra = isYasMarinaFinal && (segRatio >= 0.30 && segRatio <= 0.42);
-
-      if (isStartStraight || isArena1 || isArena2 || isArena3 || isYasMarinaExtra) {
+      if (i >= segments.length - 125 || i <= 85) {
         segments[i].hasGrandstand = true;
       }
     }
@@ -3950,10 +3879,10 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
       }
     });
 
-    // Racing engine logic
+    // 7. Inject Authentic Branching Pit Lane Roadway along the Finish Straight (ถนนแยกออกไปข้างนอกใกล้เส้นชัย)
     // Smoothly straighten the final approach straight (segments.length - 110 to segments.length) and start (0 to 30)
     // so that EVERY circuit has a crystal-clear, straight, wide Pit Lane and finish straight!
-    // Racing engine logic
+    // "แล้วก็บางด่านดันไม่มี pits ซะงั้น" -> Guarantees pit lane & finish straight are 100% visible and accessible on all 18 tracks!
     const straightStart = Math.max(0, segments.length - 110);
     for (let i = straightStart; i < segments.length; i++) {
       if (segments[i]) {
@@ -3992,7 +3921,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
     }
 
     // Clean up any right-side obstacles, trees, fences or signs that would obstruct the pit lane roadway!
-    // Racing engine logic
+    // "เหมือนว่าตอนเข้า pits มันจะชนวัตถุใน pits ไปมานะ แก้ไขให้ด้วย"
     const pitClearStart = Math.max(0, segments.length - 105);
     const pitClearEnd = 48;
 
@@ -4226,12 +4155,12 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
     };
   }, []);
 
-  // Racing engine logic
+  // Quick Time Event (QTE) input handler for WASD & Arrow keys ("ผู้เล่นต้องเป็นคนกดเองทั้งหมด ยิ่ง Crew เก่ง ลูกศรยิ่งน้อยลง")
   const handlePitQteInput = useCallback((dir: 'UP' | 'DOWN' | 'LEFT' | 'RIGHT') => {
     const engine = engineStateRef.current;
     if (!engine || engine.pitState !== 'servicing' || engine.pitQteFinished) return;
 
-    // Racing engine logic
+    // "ทำให้ผู่้เล่น delay กดลูกศรไม่ได้ 0.25 วินาทีถ้ากดปุ่มลูกศรผิดที่ pit"
     // Check if player is currently in 0.25-second lockout penalty from pressing the wrong arrow!
     const now = performance.now();
     if (engine.pitQteLockoutUntil && now < engine.pitQteLockoutUntil) {
@@ -4275,11 +4204,11 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
 
         const finalTime = engine.pitStopTimer.toFixed(2);
         if (wasFittedWetTires) {
-          setPitToastMessage(`🌧️ FITTED WET TIRES: Wet tires fitted + Vehicle restored to ${PLAYER_MAX_HEALTH}% (${finalTime}s)`);
+          setPitToastMessage(`🌧️ FITTED WET TIRES: เปลี่ยนยางเปียกลุยฝน + ซ่อมแซมรถเต็ม ${PLAYER_MAX_HEALTH}% (${finalTime}s)`);
         } else if (wasTireBlown) {
-          setPitToastMessage(`⚡ Puncture repaired! Vehicle restored to ${PLAYER_MAX_HEALTH}% (${finalTime}s)`);
+          setPitToastMessage(`⚡ ซ่อมแซมยางแตกเรียบร้อย! รถกลับมาสมบูรณ์ ${PLAYER_MAX_HEALTH}% (${finalTime}s)`);
         } else if (wasDamaged) {
-          setPitToastMessage(`🔧 PIT SERVICE: Bodywork & engine fully serviced to ${PLAYER_MAX_HEALTH}% (${finalTime}s)`);
+          setPitToastMessage(`🔧 PIT SERVICE & REPAIRS: ซ่อมแซมตัวถังและเครื่องยนต์เต็ม ${PLAYER_MAX_HEALTH}% (${finalTime}s)`);
         } else {
           setPitToastMessage(`⚡ PIT STOP COMPLETED IN ${finalTime}s: ALL ${engine.pitQteSequence.length} STATIONS SECURED!`);
         }
@@ -4375,8 +4304,8 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
             sound.playKerbThump();
             addHudAlert(
               'info',
-              '🔒 NITRO LOCKED!',
-              `Recharging to 100% (Current: ${Math.round(engineStateRef.current.nitroFuel)}%)`,
+              '🔒 NITRO ล็อกอยู่!',
+              `รอรีโหลดเต็ม 100% (ขณะนี้ ${Math.round(engineStateRef.current.nitroFuel)}%)`,
               '🔒',
               'LOCK'
             );
@@ -4479,7 +4408,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
       // Helper to trigger physical crash impact, sound, camera shake, rebound, and debris
       const triggerPropCollision = (sp: RoadsideSprite) => {
         // Complete immunity in pit lane or with friendly pit structures:
-        // Racing engine logic
+        // "เหมือนว่าตอนเข้า pits มันจะชนวัตถุใน pits ไปมานะ แก้ไขให้ด้วย"
         if (
           engine.inPitLane ||
           engine.pitState !== 'none' ||
@@ -4577,7 +4506,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
           engine.playerX += pushAwayDir * 0.04;
         }
 
-        // Racing engine logic
+        // Apply physical damage to vehicle health ("เพิ่มเลือดและความทนทานให้ผู้เล่นอีกนิดหน่อย")
         if (!engine.isEngineOnFire && racePhase === 'racing') {
           const nowDamageTime = nowMs;
           if (!engine.lastDamageTimestamp || nowDamageTime - engine.lastDamageTimestamp > 240) {
@@ -4592,7 +4521,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
               engine.pitLockoutTimer = 6.0;
               setIsEngineOnFire(true);
               sound.playEngineExplosionFire();
-              setPitToastMessage('🔥 Critical structural failure - Engine fire!');
+              setPitToastMessage('🔥 รถพังเสียหายจนไฟไหม้!');
             }
           }
         }
@@ -4683,14 +4612,14 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
         }
 
         // DRS / Nitro Boost Logic:
-        // Racing engine logic
+        // "ล็อก nitro ถ้าใช้จนหมด รอโหลดเต็มถึงจะใช้ใหม่ได้"
         const isNitroRequested = isDrs && !engine.nitroDepleted;
 
         // Nitro Depletion Check: If nitro hits empty, it locks out until fully recharged to 100%!
         if (engine.nitroFuel <= 0.1) {
           if (!engine.nitroDepleted) {
             sound.playTireSqueal();
-            addHudAlert('info', '🔒 NITRO DEPLETED!', 'Locked until 100% recharged', '🔒', 'LOCK');
+            addHudAlert('info', '🔒 NITRO หมด!', 'ล็อกจนกว่าจะรีโหลดเต็ม 100%', '🔒', 'LOCK');
           }
           engine.nitroFuel = 0;
           engine.nitroDepleted = true;
@@ -4708,7 +4637,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
             if (engine.nitroDepleted) {
               engine.nitroDepleted = false; // UNLOCKED! Fully reloaded to 100%!
               sound.playPitLimiterBeep();
-              addHudAlert('info', '⚡ NITRO FULLY CHARGED!', '100% Available - Boost Ready', '⚡', 'READY');
+              addHudAlert('info', '⚡ NITRO เต็มแล้ว!', 'พร้อมใช้งาน 100%', '⚡', 'READY');
             }
           }
         }
@@ -4738,7 +4667,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
             engine.nitroFuel = 0;
             if (!engine.nitroDepleted) {
               sound.playTireSqueal();
-              addHudAlert('info', '🔒 NITRO DEPLETED!', 'Locked until 100% recharged', '🔒', 'LOCK');
+              addHudAlert('info', '🔒 NITRO หมด!', 'ล็อกจนกว่าจะรีโหลดเต็ม 100%', '🔒', 'LOCK');
             }
             engine.nitroDepleted = true; // Drained! Locked until fully recharged to 100%!
             engine.drsActive = false;
@@ -4755,7 +4684,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
           ? Math.max(90, Math.min(125 + (teamState.car.suspension - 70) * 0.8, maxSpeed * 0.38)) // Suspension increases offroad speed floor
           : maxSpeed;
 
-        // Racing engine logic
+        // "เพิ่มบทลงโทษถ้าไม่เข้า pits จะมีข้อแจ้งเตือนประมาณสั้นๆว่า ยางแตกเนื้องอจากไม่ได้เข้า pits ความเร็วจะลด 50% ตลอดทั้งเกม"
         if (engine.tireBlown) {
           effectiveMaxSpeed = Math.round(effectiveMaxSpeed * 0.50);
         }
@@ -4809,7 +4738,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
         const isPitAvailable = (!engine.hasPitted || engine.tireBlown) && (engine.lap >= middleLap);
 
         // Check Mandatory Pit Stop missed penalty: blown tire!
-        // Racing engine logic
+        // "เพิ่มบทลงโทษถ้าไม่เข้า pits จะมีข้อแจ้งเตือนประมาณสั้นๆว่า ยางแตกเนื้องอจากไม่ได้เข้า pits ความเร็วจะลด 50% ตลอดทั้งเกม"
         if (!engine.hasPitted && !engine.inPitLane && !engine.tireBlown) {
           const missedPitDeadline = (engine.lap === middleLap && currentSegmentIndex > engine.segments.length - 10) || engine.lap > middleLap;
           if (missedPitDeadline && racePhase === 'racing') {
@@ -4837,7 +4766,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
         }
 
         // Player intentionally steers right onto the branching pit lane road
-        // Racing engine logic
+        // "แล้วก็รถถ้าพังแล้วก็จะเข้า สนามpits ไม่ได้ทันที"
         const isCarBroken = engine.carHealth <= 0 || engine.isEngineOnFire;
         const isPitLockoutActive = isCarBroken && engine.pitLockoutTimer > 0;
 
@@ -4847,7 +4776,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
               // Broken car cannot enter pits immediately! Must wait for recovery/cooldown
               if (!engine.pitBlockedToastShown || nowMs - engine.pitBlockedToastShown > 2400) {
                 engine.pitBlockedToastShown = nowMs;
-                setPitToastMessage(`⛔ Car damaged! Pit lockout in progress (Wait ${Math.ceil(engine.pitLockoutTimer)}s)`);
+                setPitToastMessage(`⛔ รถพัง! เข้า PIT ทันทีไม่ได้ (รอ ${Math.ceil(engine.pitLockoutTimer)}s)`);
                 setTimeout(() => setPitToastMessage(null), 2000);
               }
             } else if (engine.pitState === 'none') {
@@ -4860,13 +4789,13 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
 
         if (engine.inPitLane) {
           if (engine.pitState === 'entering') {
-            // Racing engine logic
+            // "แก้ไขบัคตอนเข้า pits พอเข้าพลาด กลายเป็นว่าค้างอยู่ข้างทางตลอด บังคับเข้าถนนไม่ได้"
             // If player steers left back towards the track very early on the approach, allow them to safely return to the main road!
             if (isSteerLeft && engine.playerX <= 0.95 && currentSegmentIndex < engine.segments.length - 55 && currentSegmentIndex >= engine.segments.length - 90) {
               engine.inPitLane = false;
               engine.pitState = 'none';
             } else if (currentSegmentIndex >= engine.segments.length - 70 || currentSegmentIndex <= 18) {
-              // Racing engine logic
+              // "บางทีเข้า pits ไม่ทัน แล้วพ้นไปนิดเดียวกลายว่า ไม่มี qucik time event"
               // Smoothly and decisively bring car to a full stop in the team pit box!
               // Even if entering fast, late, or rolling past by a little, braking firmly locks the car into the pit box for the QTE!
               engine.speed = Math.max(0, engine.speed - 700 * dt);
@@ -4980,7 +4909,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
         }
 
         // Engine fire failure handling: car loses power and smoothly decelerates to a halt while on fire!
-        // Racing engine logic
+        // "ให้รถให้ค่อยๆช้าลงในคณะี่มีไฟขึ้นและขึ้นหน้าแพ้"
         if (engine.isEngineOnFire) {
           effectiveMaxSpeed = 0;
           engine.speed = Math.max(0, engine.speed - 120 * dt);
@@ -5037,14 +4966,14 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
               offroadEvents: engine.offroadEventsCount,
               standings,
               isDnfFireLoss: true,
-              fireDnfReason: 'Engine critically compromised from collision impacts (ENGINE FIRE DNF)',
+              fireDnfReason: 'เครื่องยนต์ระเบิดไฟไหม้จากการชนสะสม รถหยุดทำงาน (ENGINE FIRE DNF)',
             });
 
             setRacePhase('finished');
           }
         }
 
-        // Racing engine logic
+        // Progressive engine damage smoke: "(ยิ่งใกล้พังยิ่งมีควันเยอะขึ้น)"
         if (!engine.isEngineOnFire && engine.carHealth < (PLAYER_MAX_HEALTH * 0.75) && engine.speed > 35) {
           const dmg = PLAYER_MAX_HEALTH - engine.carHealth;
           const smokeOdds = dmg > (PLAYER_MAX_HEALTH * 0.60) ? 0.70 : dmg > (PLAYER_MAX_HEALTH * 0.35) ? 0.40 : 0.20;
@@ -5185,7 +5114,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
         // Bound player position within generous terrain margins (-3.5 to 3.5) so offroad props are strikeable!
         engine.playerX = Math.max(-3.5, Math.min(3.5, engine.playerX));
 
-        // Racing engine logic
+        // Off-road track logging & high-speed chassis abrasion wear ("ให้รถพังง่ายขึ้นกว่านี้อีกนิดหน่อย")
         if (isOffroad) {
           engine.offroadTicks++;
           if (engine.offroadTicks % 60 === 1) {
@@ -5204,7 +5133,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
                 engine.pitLockoutTimer = 6.0;
                 setIsEngineOnFire(true);
                 sound.playEngineExplosionFire();
-                setPitToastMessage('🔥 Severe rough terrain impact - Engine fire!');
+                setPitToastMessage('🔥 ลุยพื้นขรุขระเร็วเกินจนไฟไหม้!');
               }
             }
           }
@@ -5228,7 +5157,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
         const playerCarWorldZ = (engine.position + playerCarOffset) % engine.trackLength;
         const playerCarSegIdx = Math.floor(playerCarWorldZ / engine.segmentLength) % engine.segments.length;
 
-        // Racing engine logic
+        // 3D Grandstand Solid Safety Barrier Collision (ป้องกันรถหลุดทะลุอัฒจันทร์)
         const currentCarSeg = engine.segments[playerCarSegIdx];
         if (currentCarSeg && currentCarSeg.hasGrandstand && !engine.isEngineOnFire && racePhase === 'racing') {
           // Left Grandstand Crash Barrier (at X = -1.40)
@@ -5250,7 +5179,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
                 engine.pitLockoutTimer = 6.0;
                 setIsEngineOnFire(true);
                 sound.playEngineExplosionFire();
-                setPitToastMessage('🔥 Grandstand barrier collision - Engine fire!');
+                setPitToastMessage('🔥 ชนแนวกั้นอัฒจันทร์จนไฟไหม้!');
               }
             }
           } else if (engine.playerX > 1.86 && !engine.inPitLane) {
@@ -5272,7 +5201,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
                 engine.pitLockoutTimer = 6.0;
                 setIsEngineOnFire(true);
                 sound.playEngineExplosionFire();
-                setPitToastMessage('🔥 Grandstand barrier collision - Engine fire!');
+                setPitToastMessage('🔥 ชนแนวกั้นอัฒจันทร์จนไฟไหม้!');
               }
             }
           }
@@ -5361,8 +5290,8 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
           }
         }
 
-        // Racing engine logic
-        // Racing engine logic
+        // ข้อ 2: คำนวณ heat (Rubber-band dynamic heat calculation)
+        // heatRaw = (จำนวน AI + 1 - อันดับผู้เล่น) / จำนวน AI (อันดับ 1 = 1.0, อันดับสุดท้าย = 0.0)
         const totalAiCount = Math.max(1, engine.aiCars.length);
         const heatRaw = Math.max(0, Math.min(1.0, (totalAiCount + 1 - livePlayerPos) / totalAiCount));
 
@@ -5377,7 +5306,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
         const cheatMultiplier = AI_DIFFICULTY.cheatLevel === 0 ? 0 : AI_DIFFICULTY.cheatLevel === 2 ? 1.5 : 1.0;
         const effectiveHeat = (engine.heat ?? 0) * cheatMultiplier;
 
-        // Racing engine logic
+        // Top 2 AI rivals closest to player in distance (for ข้อ 8 last lap sprint)
         const closestAiCarsSorted = [...engine.aiCars].sort((a, b) => {
           const aDist = Math.abs((a.lapsCompleted * engine.trackLength + a.z) - playerTotalDistance);
           const bDist = Math.abs((b.lapsCompleted * engine.trackLength + b.z) - playerTotalDistance);
@@ -5387,9 +5316,9 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
         let maxCheatBonusThisFrame = 0;
 
         // ---------------------------------------------------------------------
-        // Racing engine logic
+        // SECRET RUBBER-BANDING CATCH-UP SYSTEM (ระบบลับเกมเพิ่มความสูสี)
         // If the player is far ahead of everyone else, top pursuers surge at extreme
-        // Racing engine logic
+        // speeds to catch right up to the player's tail ("จี้ตูดเรา")!
         // ---------------------------------------------------------------------
         const pursuerList = engine.aiCars
           .map((ai) => {
@@ -5486,7 +5415,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
               if (ai.personalityKey === 'underdog_raider') {
                 ai.personalityActiveTimer = 2.2;
                 ai.personalitySkillName = 'BOOSTER RUSH';
-                ai.personalitySkillNameTh = 'BOOST CHARGE';
+                ai.personalitySkillNameTh = 'พุ่งชาร์จบูสเตอร์ทะลวง';
               }
 
               let relPlayerZ = ai.z - playerCarWorldZ;
@@ -5509,7 +5438,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
           }
 
           // -------------------------------------------------------------------
-          // Racing engine logic
+          // A. HIGH-SPEED INTELLIGENT OBSTACLE SENSING & CORRIDOR PATHFINDING (AI ฉลาด หลบสิ่งกีดขวางได้อย่างช่ำชอง)
           // -------------------------------------------------------------------
           let distToPlayer = playerCarWorldZ - ai.z;
           if (distToPlayer < -engine.trackLength / 2) distToPlayer += engine.trackLength;
@@ -5519,7 +5448,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
           const lookaheadSegs = ai.personalityKey === 'legendary_precision' ? 85 : ai.personalityKey === 'apex_predator' ? 80 : 75;
           const threatsAhead: TrackObstacleThreat[] = [];
 
-          // Racing engine logic
+          // Requirement: "แก้ไขเป็น 50 เมตรละกันที่ทะลุได้"
           // If AI is 50+ meters behind the player's screen (distToPlayer >= 5000), it phases cleanly through obstacles!
           const isAiBehindPlayer50m = distToPlayer >= 5000;
 
@@ -5746,7 +5675,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
             }
           }
 
-          // Racing engine logic
+          // C. จุดแข็งตามบุคลิก: personalityKey ให้โบนัส +5 กม./ชม. ในช่วงที่ตรงกับจุดแข็ง และ -3 ในช่วงที่ไม่ใช่
           const personalityBonus = getPersonalitySpeedDelta(
             ai.personalityKey,
             segCurve,
@@ -5757,9 +5686,9 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
 
           const baseCarPace = ai.baseSpeed + (ai.stintPaceDelta || 0) + organicWave + racePhaseBonus + personalityBonus;
 
-          // Racing engine logic
-          // Racing engine logic
-          // Racing engine logic
+          // B. ความผิดพลาดของ AI: ต่อรอบ AI แต่ละคันมีโอกาสพลาด 1 ครั้ง (AI อันดับสูงพลาดน้อยกว่า)
+          // เมื่อพลาดให้ใช้ slowedTimer ประมาณ 1.0-1.5 วินาที ลดความเร็ว 12-18 กม./ชม. และเบี่ยงแนวไปด้านนอก
+          // สุ่มได้แต่ไม่ให้ AI หลายคันพลาดพร้อมกัน
           const aiCurrentLapForMistake = ai.lapsCompleted + 1;
           const canMakeMistake =
             ai.mistakeLap !== aiCurrentLapForMistake &&
@@ -5778,15 +5707,15 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
               ai.slowedTimer = 1.0 + Math.random() * 0.5; // 1.0 to 1.5 seconds
               const speedDrop = 12 + Math.random() * 6; // 12 to 18 km/h reduction
               ai.speed = Math.max(50, ai.speed - speedDrop);
-              // Racing engine logic
+              // เบี่ยงแนวไปด้านนอก
               ai.targetX = segCurve > 0 ? 0.88 : segCurve < 0 ? -0.88 : (ai.x >= 0 ? 0.88 : -0.88);
             }
           }
 
           // -------------------------------------------------------------------
           // COMPETITIVE RACING PACEMAKER & +-100M SPEED EQUALIZATION
-          // Racing engine logic
-          // Racing engine logic
+          // "ทำให้ขู่แข่งเร็วกว่านี้ให้สูสีกับผู่เล่นรวมถึงแซงอยู่หน้าผู้เล่นสัก +- 100 เมตรก่อนให้ speed เท่าผู่เล่น"
+          // "ให้ 300 ไม่มี nitro 350 ถ้ามีใช้ nitro"
           // -------------------------------------------------------------------
           const distFromPlayerM = distToPlayer / 100;
           const gapBehindM = Math.max(0, distFromPlayerM); // meters AI is behind player
@@ -5808,12 +5737,12 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
             rivalTargetPace -= 18;
           }
 
-          // Racing engine logic
+          // Competitive pacing without slowing down for player (ข้อ 3)
           if (!ai.isFire && !ai.isDnf && !ai.tireBlown) {
-            // Keep AI cars in visible competitive corridor so cars never vanish over the horizon
-            if (leadAheadM > 90) {
-              const packTarget = Math.max(140, engine.speed + 8 + (10 - aiIdx) * 1.5);
-              rivalTargetPace = Math.min(rivalTargetPace, packTarget);
+            // If AI is leading far ahead (> rubberBandStartM, e.g. 250m), apply gentle trim (max 6 km/h)
+            if (leadAheadM > AI_DIFFICULTY.rubberBandStartM) {
+              const leadTrim = Math.min(6, (leadAheadM - AI_DIFFICULTY.rubberBandStartM) * 0.04);
+              rivalTargetPace = Math.max(ai.baseSpeed - 6, rivalTargetPace - leadTrim);
             } else if (gapBehindM > 0 && gapBehindM <= 100) {
               // Trailing player within ~100m: aggressive competitive surge to challenge & overtake!
               const attackSurge = 4 + ai.aggression * 6;
@@ -5823,7 +5752,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
               // Further back than 100m: strong pursuit pace to close the gap into the battle zone!
               const roundIdx = Math.min(17, Math.max(0, (activeGp.round || 1) - 1));
               const currentAiTopSpeedCap = AI_DIFFICULTY.aiTopSpeedBase + roundIdx * AI_DIFFICULTY.aiTopSpeedPerRound;
-              rivalTargetPace = Math.max(rivalTargetPace, Math.min(currentAiTopSpeedCap, ai.baseSpeed + 12));
+              rivalTargetPace = Math.max(rivalTargetPace, Math.min(currentAiTopSpeedCap, ai.baseSpeed + 6));
             }
           }
 
@@ -5836,18 +5765,18 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
                 ai.targetX = segCurve > 0 ? 0.32 : -0.32;
                 ai.personalityActiveTimer = 1.8;
                 ai.personalitySkillName = 'APEX DIVE-BOMB';
-                ai.personalitySkillNameTh = 'APEX DIVE-BOMB';
+                ai.personalitySkillNameTh = 'พุ่งเสียบในโค้งสายฟ้า';
               }
             } else if (ai.personalityKey === 'tenacious_fighter') {
               rivalTargetPace += 3.5;
               ai.personalityActiveTimer = 1.6;
               ai.personalitySkillName = 'SIDE-BY-SIDE BRAWL';
-              ai.personalitySkillNameTh = 'SIDE-BY-SIDE BRAWL';
+              ai.personalitySkillNameTh = 'ดวลเบียดตีคู่ไม่ยก';
             } else if (ai.personalityKey === 'corner_virtuoso' && Math.abs(segCurve) > 0.40) {
               rivalTargetPace += 4.0;
               ai.personalityActiveTimer = 1.8;
               ai.personalitySkillName = 'CORNER BLITZ';
-              ai.personalitySkillNameTh = 'CORNER BLITZ';
+              ai.personalitySkillNameTh = 'สาดโค้งความเร็วสูง';
             }
 
             if (ai.overtakeTimer <= 0) {
@@ -5865,7 +5794,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
           } else if (distToPlayer > 0) {
             // AI is behind player: Aerodynamic Slipstream / Draft if following in line
             if (gapBehindM < 50 && Math.abs(ai.x - engine.playerX) < 0.40) {
-              // Racing engine logic
+              // ข้อ 6: Slipstream tow advantage + slipstreamCheatMax * heat
               const slipCheat = effectiveHeat > 0 ? AI_DIFFICULTY.slipstreamCheatMax * effectiveHeat : 0;
               rivalTargetPace += 12 + slipCheat; // Slipstream tow advantage + heat cheat
               ai.drsActive = true;
@@ -5873,10 +5802,10 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
                 rivalTargetPace += 6;
                 ai.personalityActiveTimer = 2.0;
                 ai.personalitySkillName = 'SLINGSHOT SURGE';
-                ai.personalitySkillNameTh = 'SLIPSTREAM SURGE';
+                ai.personalitySkillNameTh = 'สลิปสตรีมดีดพุ่งแซง';
               }
             }
-            // Racing engine logic
+            // ข้อ 7: Bonus +6 km/h slipstream for 3 seconds after being overtaken
             if (ai.counterAttackTimer && ai.counterAttackTimer > 0) {
               rivalTargetPace += 6;
               ai.drsActive = true;
@@ -5889,8 +5818,8 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
             }
           } else {
             // AI is ahead of player (leadAheadM > 0)
-            // Racing engine logic
-            // Racing engine logic
+            // ข้อ 5: AI ปิดเลน (Blocking System)
+            // เมื่อ AI อยู่ข้างหน้าผู้เล่นไม่เกิน 45 เมตร และผู้เล่นกำลังเข้าใกล้ (engine.speed > ai.speed) และไม่ใช่ isEvading/กำลังเข้าพิท
             const isPlayerClosingIn = engine.speed > ai.speed;
             const canBlock =
               leadAheadM > 0 &&
@@ -5921,20 +5850,20 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
               ai.targetX = Math.max(-0.62, Math.min(0.62, engine.playerX * 0.85));
               ai.personalityActiveTimer = 1.8;
               ai.personalitySkillName = 'DEFENSIVE WEAVE';
-              ai.personalitySkillNameTh = 'DEFENSIVE LINE BLOCK';
+              ai.personalitySkillNameTh = 'โยกบล็อกปิดไลน์สกัดแซง';
             } else if (ai.personalityKey === 'straight_line_rocket' && Math.abs(segCurve) < 0.35) {
               rivalTargetPace += 5.0;
               ai.personalityActiveTimer = 1.8;
               ai.personalitySkillName = 'STRAIGHT-LINE MISSILE';
-              ai.personalitySkillNameTh = 'STRAIGHTAWAY BLITZ';
+              ai.personalitySkillNameTh = 'ยิงทางตรงความเร็วสูงสุด';
               ai.targetX = 0.0;
             }
           }
 
-          // Racing engine logic
+          // AI NITRO BOOST MANAGEMENT ("ให้ผู้แข่งขันสามารถใช้ nitro ได้เช่นกันด้วย")
           // AI manages their own nitro reserves and triggers nitro bursts tactically
-          // Racing engine logic
-          // Racing engine logic
+          // ข้อ 5: ไนตรัสไม่หมดเมื่อ heat > 0.5 และ AI อยู่ห่างผู้เล่นไม่เกิน freeNitroRangeM เมตร (ทั้งสองทิศ)
+          // ข้อ 8: ในรอบสุดท้าย ถ้าอันดับผู้เล่น <= 3 ให้ AI 2 คันที่อยู่ใกล้ผู้เล่นที่สุด ได้ไนตรัสไม่หมดตามข้อ 5 โดยไม่ต้องรอ heat > 0.5
           const absDistToPlayerM = Math.abs(distToPlayer / 100);
           const isTop2Closest = top2ClosestAiIds.has(ai.id);
           const hasFreeNitro =
@@ -5983,7 +5912,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
             Math.abs(segCurve) < 0.65;
 
           if (canAiUseNitro && !ai.nitroActive && (ai.nitroFuel ?? 0) >= 25) {
-            // Racing engine logic
+            // Player nitrous defense counter (ข้อ 4 & 5):
             // If AI is leading ahead of player within 60m and player engages nitro (engine.drsActive), AI defends!
             // When free nitro is active, defense chance is 100%!
             const isPlayerAttackingWithNitro = leadAheadM > 0 && leadAheadM <= 60 && engine.drsActive;
@@ -6011,17 +5940,21 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
             ai.drsActive = true;
           }
 
-          // Racing engine logic
+          // Enforce dynamic top speed cap without nitro (ข้อ 2), 350 km/h with nitro
+          // Min Werstappen, Louis Hammerton, Alex Alboon: ความเร็วมากกว่าเดิม 10%
+          const isBoss = isBossRival(ai.id, ai.name);
           const roundIdx = Math.min(17, Math.max(0, (activeGp.round || 1) - 1));
-          const currentAiTopSpeedCap = AI_DIFFICULTY.aiTopSpeedBase + roundIdx * AI_DIFFICULTY.aiTopSpeedPerRound;
+          const baseTopSpeedCap = AI_DIFFICULTY.aiTopSpeedBase + roundIdx * AI_DIFFICULTY.aiTopSpeedPerRound;
+          const currentAiTopSpeedCap = isBoss ? Math.round(baseTopSpeedCap * 1.10) : baseTopSpeedCap;
+          const maxPaceNitro = isBoss ? 385 : 350;
           if (!ai.nitroActive) {
             rivalTargetPace = Math.min(currentAiTopSpeedCap, rivalTargetPace);
           } else {
-            rivalTargetPace = Math.min(350, rivalTargetPace);
+            rivalTargetPace = Math.min(maxPaceNitro, rivalTargetPace);
           }
 
           // Corner speed limit with realistic downforce (braking for tight turns)
-          // Racing engine logic
+          // ข้อ 6: ที่สูตรเสียความเร็วในโค้งของ AI ให้คูณส่วนที่ลดความเร็วด้วย (1 - cornerGripCheatMax * heat)
           const downforceFactor = Math.max(0.010, 0.020 - currentRoundIdx * 0.0006);
           const personalityDownforceMod = ai.personalityKey === 'corner_virtuoso'
             ? 0.38
@@ -6043,14 +5976,19 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
             ai.drsActive = true;
           }
 
-          // Racing engine logic
+          // Enforce dynamic top speed cap without nitro, 350 with nitro (ข้อ 2)
           if (!ai.nitroActive) {
             rivalTargetSpeed = Math.min(currentAiTopSpeedCap, rivalTargetSpeed);
           } else {
-            rivalTargetSpeed = Math.min(350, rivalTargetSpeed);
+            rivalTargetSpeed = Math.min(maxPaceNitro, rivalTargetSpeed);
           }
 
-          // Racing engine logic
+          // Min Werstappen, Louis Hammerton, Alex Alboon: ความเร็วมากกว่าเดิม 10%
+          if (isBoss) {
+            rivalTargetSpeed = Math.min(maxPaceNitro, rivalTargetSpeed * 1.10);
+          }
+
+          // Pursuer catch-up logic & Chaser cheat surge (ข้อ 3)
           let cheatBonusThisCar = 0;
           if (isDesignatedChaser && trueGapToPlayerM > 0 && (!ai.crashStunTimer || ai.crashStunTimer <= 0) && (!ai.slowedTimer || ai.slowedTimer <= 0)) {
             ai.isCatchUpBeast = true;
@@ -6066,7 +6004,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
               rivalTargetSpeed = Math.max(rivalTargetSpeed, ai.baseSpeed + 8);
             }
 
-            // Racing engine logic
+            // ข้อ 3: ตัวไล่ล่าเร่งเกินเพดาน (ทำหลังโค้ดจำกัดเพดานความเร็วปกติเพื่อไม่ให้ถูกตัด)
             if (effectiveHeat > 0) {
               const chaserCheatTarget = engine.speed + AI_DIFFICULTY.chaserBonusMin + (AI_DIFFICULTY.chaserBonusMax - AI_DIFFICULTY.chaserBonusMin) * effectiveHeat;
               const chaserCap = ai.nitroActive ? 350 : AI_DIFFICULTY.cheatSpeedHardCap;
@@ -6080,8 +6018,8 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
             ai.isTailgating = false;
           }
 
-          // Racing engine logic
-          // Racing engine logic
+          // ข้อ 4: AI ที่นำอยู่หนีผู้เล่น (หลังข้อ 3)
+          // เมื่อ AI อยู่ข้างหน้าผู้เล่นภายใน leaderRangeM เมตร และไม่ติดสถานะ crash/slowed/fire/dnf/tireBlown/pitting
           if (effectiveHeat > 0 && leadAheadM > 0 && leadAheadM <= AI_DIFFICULTY.leaderRangeM) {
             const isHealthyLeadingAi = !ai.crashStunTimer && !ai.slowedTimer && !ai.isFire && !ai.isDnf && !ai.tireBlown && !ai.isPitting;
             if (isHealthyLeadingAi && Math.abs(segCurve) <= 1.4) {
@@ -6092,8 +6030,8 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
             }
           }
 
-          // Racing engine logic
-          // Racing engine logic
+          // ข้อ 8: ซิ่งรอบสุดท้าย
+          // ในรอบสุดท้าย ถ้าอันดับผู้เล่น <= 3 ให้ AI 2 คันที่อยู่ใกล้ผู้เล่นที่สุด ได้ rivalTargetSpeed += lastLapSprintBonus * heat
           if (effectiveHeat > 0 && isFinalLap && livePlayerPos <= 3 && isTop2Closest) {
             const sprintBonus = AI_DIFFICULTY.lastLapSprintBonus * effectiveHeat;
             const newSpeed = Math.min(AI_DIFFICULTY.cheatSpeedHardCap, rivalTargetSpeed + sprintBonus);
@@ -6101,44 +6039,16 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
             rivalTargetSpeed = newSpeed;
           }
 
-          const isMinWerstappenCar = ai.tag === 'WER' || ai.name.toLowerCase().includes('werstappen') || ai.name.toLowerCase().includes('min');
-          const isFinalCircuitRound = (activeGp.round || 1) >= (teamState.totalRaces || 18) || (activeGp.round || 1) >= (teamState.seasonCircuits?.length || 18);
-          const isMinWestInRound18 = isMinWerstappenCar && isFinalCircuitRound;
+          // เมื่อ leadAheadM > rubberBandStartM ให้ rubber band เดิม (ตัดความเร็ว) ทำงานตามปกติ เพื่อไม่ให้ AI หายไปจากผู้เล่น
+          if (leadAheadM > AI_DIFFICULTY.rubberBandStartM) {
+            const leadTrim = Math.min(6, (leadAheadM - AI_DIFFICULTY.rubberBandStartM) * 0.04);
+            rivalTargetSpeed = Math.max(ai.baseSpeed - 6, rivalTargetSpeed - leadTrim);
+          }
 
-          // User Requirement: "แล้วก็ในด่านที่ 18 ให้ Min West มี HP ไม่จำกัด และเร็วกว่าผู้เล่น 10% ตลอด"
-          if (isMinWestInRound18) {
-            ai.health = 9999999;
-            ai.maxHealth = 9999999;
-            ai.isFire = false;
-            ai.isDnf = false;
-            ai.tireBlown = false;
-            ai.crashStunTimer = 0;
-            ai.slowedTimer = 0;
-
-            // Min West is ALWAYS 10% faster than the player at all times in round 18!
-            // Dynamic pacing keeps Min West in visual engagement (~35m to 85m ahead) as the ultimate boss:
-            const playerSpd = Math.max(45, engine.speed);
-            const targetPace = playerSpd * 1.10;
-
-            if (leadAheadM > 85) {
-              // Stay in sight ahead of player so the boss battle is always visible
-              rivalTargetSpeed = Math.max(playerSpd + 3, targetPace * 0.96);
-            } else if (leadAheadM < 30 || distToPlayer > 0) {
-              // When player gets close or tries to overtake, surge aggressively with +10% to +14%
-              rivalTargetSpeed = Math.max(targetPace * 1.04, ai.baseSpeed * 0.95);
-            } else {
-              rivalTargetSpeed = targetPace;
-            }
-            rivalTargetSpeed = Math.min(360, Math.max(65, rivalTargetSpeed));
-          } else {
-            // Keep competitors condensed in an intense F1 racing pack around the player:
-            // Never allow competitor cars to vanish over the horizon (> 110m ahead)!
-            if (leadAheadM > 90) {
-              const packLeaderTarget = Math.max(140, engine.speed + 6 + (10 - aiIdx) * 1.2);
-              rivalTargetSpeed = Math.min(rivalTargetSpeed, packLeaderTarget);
-            } else if (gapBehindM > 45 && !ai.isFire && !ai.isDnf) {
-              rivalTargetSpeed = Math.max(rivalTargetSpeed, engine.speed + 6);
-            }
+          // บอทที่อยู่หลังผู้เล่นมากกว่า 100 เมตรได้ความเร็วเพิ่ม 20% ("แล้วก็บอทที่อยู่หลังผู้เล่นมากกว่า 100 เมตรได้ความเร็วเพิ่ม 20%")
+          const isBehindPlayerOver100m = (gapBehindM > 100 || trueGapToPlayerM > 100) && !ai.isFire && !ai.isDnf && !ai.tireBlown;
+          if (isBehindPlayerOver100m) {
+            rivalTargetSpeed = Math.min(360, rivalTargetSpeed * 1.20);
           }
 
           if (isTop2Closest) {
@@ -6159,7 +6069,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
               ai.targetX = upcomingPadOffset;
             } else if (ai.isAttacking || isSideBySide) {
               if (isSideBySide && leadAheadM > 0) {
-                // Racing engine logic
+                // When AI is leading side-by-side, hold existing lane firmly instead of yielding to player (ข้อ 5)
                 ai.targetX = ai.x;
               } else {
                 const attackSide = engine.playerX >= 0 ? -0.48 : 0.48;
@@ -6211,21 +6121,23 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
                 ai.speed = Math.max(50, ai.speed - 35);
                 otherAi.speed = Math.max(50, otherAi.speed - 35);
 
-                ai.health = Math.max(0, (ai.health ?? 100) - 6);
-                otherAi.health = Math.max(0, (otherAi.health ?? 100) - 6);
+                const aiMax1 = ai.maxHealth || getRivalMaxHealth(ai.id, ai.name);
+                const aiMax2 = otherAi.maxHealth || getRivalMaxHealth(otherAi.id, otherAi.name);
+                ai.health = Math.max(0, (ai.health ?? aiMax1) - 6);
+                otherAi.health = Math.max(0, (otherAi.health ?? aiMax2) - 6);
                 if (ai.health <= 0 && !ai.isDnf) {
                   ai.isFire = true;
                   ai.isDnf = true;
                   ai.speed = 0;
                   ai.lateralVx = 0;
-                  setPitToastMessage(`🔥 ${ai.name} (${ai.tag}) engine exploded! RETIRED (DNF)`);
+                  setPitToastMessage(`🔥 ${ai.name} (${ai.tag}) รถพังไฟไหม้! RETIRED (DNF)`);
                 }
                 if (otherAi.health <= 0 && !otherAi.isDnf) {
                   otherAi.isFire = true;
                   otherAi.isDnf = true;
                   otherAi.speed = 0;
                   otherAi.lateralVx = 0;
-                  setPitToastMessage(`🔥 ${otherAi.name} (${otherAi.tag}) engine exploded! RETIRED (DNF)`);
+                  setPitToastMessage(`🔥 ${otherAi.name} (${otherAi.tag}) รถพังไฟไหม้! RETIRED (DNF)`);
                 }
 
                 let relPlayerZ = ai.z - playerCarWorldZ;
@@ -6256,7 +6168,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
           // -------------------------------------------------------------------
           // ABSOLUTE SLOWDOWN & CRASH STUN OVERRIDES
           // -------------------------------------------------------------------
-          // Racing engine logic
+          // AI Fire / DNF handling ("ถ้ารถคู่แข่งพังก็ให้ขึ้นไฟไหม้ และอยู่เฉยๆ")
           if (ai.isFire || ai.isDnf) {
             rivalTargetSpeed = 0;
             ai.speed = 0; // Completely stationary - zero movement!
@@ -6323,7 +6235,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
 
           // AI Pit Stop Execution:
           // Disperse pit stops across laps, entry points, and dedicated team stalls
-          // Racing engine logic
+          // ("ตอนเข้า้ pits ให้คู่แข่งดูเข้า pits กระจัดกระจายมากกว่านี้มากกว่าการกระจุกอยู่จุดเดียว")
           const midLap = engine.totalLaps <= 2 ? 1 : Math.floor(engine.totalLaps / 2) + 1;
           const targetPitLap = ai.pitLap || midLap;
           const aiCurrentLap = ai.lapsCompleted + 1;
@@ -6350,7 +6262,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
             } else {
               if (ai.z > engine.trackLength - 300 && !ai.tireBlown) {
                 ai.tireBlown = true;
-                setPitToastMessage(`⚠️ ${ai.name} (${ai.tag}) missed pit entry! Blown tire -50% speed`);
+                setPitToastMessage(`⚠️ ${ai.name} (${ai.tag}) พลาดการเข้า PIT! ยางแตกความเร็วลด 50%`);
                 setTimeout(() => setPitToastMessage(null), 4500);
               }
             }
@@ -6358,7 +6270,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
 
           if (aiCurrentLap > targetPitLap && !ai.hasPitted && !ai.tireBlown) {
             ai.tireBlown = true;
-            setPitToastMessage(`⚠️ ${ai.name} (${ai.tag}) missed pit entry! Blown tire -50% speed`);
+            setPitToastMessage(`⚠️ ${ai.name} (${ai.tag}) พลาดการเข้า PIT! ยางแตกความเร็วลด 50%`);
             setTimeout(() => setPitToastMessage(null), 4500);
           }
 
@@ -6377,7 +6289,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
                 if (engine.isRaining) {
                   ai.hasWetTires = true;
                 }
-                ai.health = 100;
+                ai.health = ai.maxHealth || getRivalMaxHealth(ai.id, ai.name);
                 ai.pitExitGraceTimer = 3.6; // Grace period to accelerate & merge without triggering grass offroad drag!
                 // Launch out of pits immediately at high speed, no creeping!
                 ai.speed = Math.max(ai.speed, 260 + Math.random() * 25);
@@ -6409,7 +6321,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
             }
           }
 
-          // Racing engine logic
+          // AI Engine Fire Breakdown & DNF: completely stationary while on fire ("ถ้ารถคู่แข่งพังก็ให้ขึ้นไฟไหม้ และอยู่เฉยๆ")
           if (ai.isFire || ai.isDnf) {
             rivalTargetSpeed = 0;
             ai.speed = 0;
@@ -6457,14 +6369,16 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
             accelMultiplier = 1.8;
           } else if (ai.isAttacking) {
             accelMultiplier = 1.35;
+          } else if (isBehindPlayerOver100m) {
+            accelMultiplier = 1.35;
+          }
+
+          if (isBoss) {
+            accelMultiplier *= 1.10;
           }
 
           const roundAccelBonus = currentRoundIdx * 14;
-          const isGridStartPhase = (engine.totalRaceTimeMs || 0) < 2600;
-          const baseAccelPower = isGridStartPhase
-            ? (190 + roundAccelBonus * 0.15)
-            : (480 + roundAccelBonus);
-          const accelPower = baseAccelPower * ai.aggression * accelMultiplier;
+          const accelPower = (480 + roundAccelBonus) * ai.aggression * accelMultiplier;
           const brakePower = 640;
           if (ai.isFire || ai.isDnf) {
             ai.speed = 0;
@@ -6476,17 +6390,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
             ai.speed = Math.max(rivalTargetSpeed, ai.speed - brakePower * dt);
           }
 
-          if (isMinWestInRound18) {
-            const mwTargetSpd = Math.max(45, engine.speed * 1.10);
-            if (leadAheadM > 85) {
-              ai.speed = Math.max(ai.speed, Math.max(45, engine.speed + 3));
-            } else {
-              ai.speed = Math.max(ai.speed, mwTargetSpd);
-            }
-            ai.isBraking = false;
-          }
-
-          // Racing engine logic
+          // AI Kerbs and Off-Road / Grass Drag (AI วิ่งขอบแทร็กหรือหลุดแทร็กจะโดนลดสปีดอย่างแท้จริง)
           // Pit lane asphalt exemption: do NOT penalize AI cars while pitting or merging from pit exit!
           const isAiInPitZone = ai.isPitting || (ai.pitExitGraceTimer !== undefined && ai.pitExitGraceTimer > 0) || (ai.hasPitted && ai.x > 0.85 && ai.z < 65 * 200);
           if (ai.pitExitGraceTimer && ai.pitExitGraceTimer > 0) {
@@ -6555,7 +6459,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
           // -------------------------------------------------------------------
           // D. WORLD POSITION & LIVE RANK PROGRESSION
           // -------------------------------------------------------------------
-          // Racing engine logic
+          // Stationary when on fire / wrecked DNF ("อยู่เฉยๆ")
           const aiDistanceMoved = (ai.isFire || ai.isDnf) ? 0 : (ai.speed * (1000 / 3600)) * dt * 112;
           const prevAiZ = ai.z;
           ai.z = (ai.isFire || ai.isDnf) ? ai.z : (ai.z + aiDistanceMoved) % engine.trackLength;
@@ -6568,7 +6472,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
           const currentAiTotalDist = ai.lapsCompleted * engine.trackLength + ai.z;
           const prevPlayerTotalDist = effectiveLap * engine.trackLength + prevPosition + playerCarOffset;
 
-          // Racing engine logic
+          // ข้อ 7: เมื่อ AI ถูกผู้เล่นแซง ให้ตั้ง ai.overtakeTimer = 0.4 และเพิ่มโบนัสสลิปสตรีมของ AI +6 กม./ชม. เป็นเวลา 3 วินาที เพื่อให้ AI พยายามแซงกลับ
           const isJustOvertaken = prevAiTotalDist >= prevPlayerTotalDist && currentAiTotalDist < playerTotalDistance;
           if (isJustOvertaken) {
             ai.overtakeTimer = 0.4;
@@ -6576,28 +6480,12 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
             engine.overtakesCount = (engine.overtakesCount || 0) + 1;
           }
 
-          // Racing engine logic
-          const didAiOvertakePlayer = prevAiTotalDist <= prevPlayerTotalDist && currentAiTotalDist > playerTotalDistance;
-          const isMinWerstappen = ai.tag === 'WER' || ai.name.toLowerCase().includes('werstappen') || ai.name.toLowerCase().includes('min');
-          if (didAiOvertakePlayer && isMinWerstappen) {
-            const laughs = [
-              'HAHAHA! You cannot stop me! 😈',
-              'TOO SLOW! HAHAHA! See ya! 🏎️💨',
-              'OUT OF MY WAY! HAHAHA! 🏁',
-              'SIMPLY LOVELY! HAHAHA! 😎',
-            ];
-            ai.chatBubble = laughs[Math.floor(Math.random() * laughs.length)];
-            ai.chatBubbleUntil = nowMs + 4000;
-            setPitToastMessage(`💬 ${ai.name}: "${ai.chatBubble}"`);
-            sound.playKerbThump();
-          }
-
           // Lewis Hamilton: If player overtakes Lewis, trigger Hammer Time counter-attack!
           if (ai.personalityKey === 'legendary_precision' && prevAiZ > playerCarWorldZ && ai.z <= playerCarWorldZ && !ai.hammerTimeTimer) {
             ai.hammerTimeTimer = 5.0;
             ai.personalityActiveTimer = 2.5;
             ai.personalitySkillName = 'HAMMER TIME';
-            ai.personalitySkillNameTh = 'HAMMER TIME COUNTER';
+            ai.personalitySkillNameTh = 'เค้นฟอร์มแชมป์โลกสวนกลับ';
           }
 
           const aiTotalDistance = ai.lapsCompleted * engine.trackLength + ai.z;
@@ -6634,7 +6522,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
           }
 
           // -------------------------------------------------------------------
-          // Racing engine logic
+          // PRECISE 1:1 HITBOX & STABLE TIMING (จำจังหวะและระยะชนได้แม่นยำ 100%)
           // True visual car dimensions:
           // - Lateral width: 0.228 road units (matches outside wheel rims and sidepods)
           // - Longitudinal length: -26 to +42 Z units (matches front wing to rear diffuser)
@@ -6645,7 +6533,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
           const isTouchingZ = relZ >= -26 && relZ <= 42;
           const isTouchingX = lateralGap < 0.228;
 
-          // Racing engine logic
+          // No collision if player or AI is inside pit lane ("รวมถึงให้รถชนกันไม่ได้หากอยู่ใน pits")
           const isEitherCarInPits = engine.inPitLane || engine.pitState !== 'none' || ai.isPitting || Math.abs(engine.playerX) > 1.02 || Math.abs(ai.x) > 1.02;
 
           if (!isEitherCarInPits && ai.contactCooldown <= 0 && isTouchingZ && isTouchingX) {
@@ -6677,13 +6565,13 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
             const speedRetain = 0.80 + collisionResistance * 0.12;
             const scrubFlat = 16 * (1 - collisionResistance * 0.5);
 
-            // Racing engine logic
+            // ข้อ 7: ความเร็วผู้เล่นหลังชน คูณเพิ่มด้วย (1 - (1 - collisionPlayerScrubExtra) * heat)
             const playerScrubMult = effectiveHeat > 0
               ? 1.0 - (1.0 - AI_DIFFICULTY.collisionPlayerScrubExtra) * effectiveHeat
               : 1.0;
             engine.speed = Math.max(75, (engine.speed * speedRetain - scrubFlat) * playerScrubMult);
 
-            // Racing engine logic
+            // ความเร็ว AI หลังชน: ปรับเป็นเส้นเชื่อมระหว่างค่าเดิมกับ collisionAiScrub ตาม heat
             if (!ai.isFire && !ai.isDnf) {
               const baseAiRetain = isIronWall ? 0.90 : 0.82;
               const targetAiRetain = effectiveHeat > 0
@@ -6698,7 +6586,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
             // Short control shock stun (0.24s recovery)
             engine.crashStunTimer = Math.max(engine.crashStunTimer, 0.24);
 
-            // Racing engine logic
+            // Vehicle damage from collision ("เพิ่มเลือดและความทนทานให้ผู้เล่นอีกนิดหน่อย")
             if (!engine.isEngineOnFire && racePhase === 'racing') {
               if (!engine.lastDamageTimestamp || nowMs - engine.lastDamageTimestamp > 240) {
                 engine.lastDamageTimestamp = nowMs;
@@ -6712,22 +6600,23 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
                   engine.pitLockoutTimer = 6.0;
                   setIsEngineOnFire(true);
                   sound.playEngineExplosionFire();
-                  setPitToastMessage('🔥 High-speed competitor collision - Engine fire!');
+                  setPitToastMessage('🔥 ชนคู่แข่งจนไฟไหม้!');
                 }
               }
             }
 
-            // Racing engine logic
+            // Damage to AI rival car ("ถ้ารถคู่แข่งพังก็ให้ขึ้นไฟไหม้ และอยู่เฉยๆ")
             if (!ai.isDnf) {
               const aiDamage = Math.max(4, Math.round(8 + Math.min(12, speedDiff * 0.12)));
-              ai.health = Math.max(0, (ai.health ?? 100) - aiDamage);
+              const aiMax = ai.maxHealth || getRivalMaxHealth(ai.id, ai.name);
+              ai.health = Math.max(0, (ai.health ?? aiMax) - aiDamage);
               if (ai.health <= 0) {
                 ai.isFire = true;
                 ai.isDnf = true;
                 ai.speed = 0;
                 ai.lateralVx = 0;
                 sound.playEngineExplosionFire();
-                setPitToastMessage(`🔥 ${ai.name} (${ai.tag}) engine exploded! RETIRED (DNF)`);
+                setPitToastMessage(`🔥 ${ai.name} (${ai.tag}) รถพังไฟไหม้! RETIRED (DNF)`);
               }
             }
 
@@ -6750,23 +6639,10 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
           }
 
           // AI obstacle collision touch check (AI clips obstacle: gets slowed, stunned, and deflected)
-          // Racing engine logic
+          // USER REQUIREMENT: "แก้ไขเป็น 50 เมตรละกันที่ทะลุได้"
           // When relZ <= -5000, AI car is 50+ meters behind the player's screen: phase cleanly through all obstacles!
           if (relZ <= -5000) {
             continue;
-          }
-
-          // Racing engine logic
-          const isMinWestBeastMode = isMinWerstappenCar && isFinalCircuitRound;
-
-          if (isMinWestBeastMode) {
-            ai.health = 9999999;
-            ai.maxHealth = 9999999;
-            ai.isFire = false;
-            ai.isDnf = false;
-            ai.tireBlown = false;
-            ai.crashStunTimer = 0;
-            ai.slowedTimer = 0;
           }
 
           const checkSegs = [
@@ -6792,35 +6668,6 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
                   sp.type === 'team_pitwall'
                 ) {
                   continue;
-                }
-
-                // If Min West Beast Mode is active: smash on-track obstacles and scatter items flying!
-                if (isMinWestBeastMode && sp.isObstacle) {
-                  const latDiffSmash = Math.abs(ai.x - sp.offset);
-                  let dZSmash = currentAiSeg.p1.world.z - ai.z;
-                  if (dZSmash < -engine.trackLength / 2) dZSmash += engine.trackLength;
-                  if (dZSmash > engine.trackLength / 2) dZSmash -= engine.trackLength;
-                  if (Math.abs(dZSmash) < 80 && latDiffSmash < 0.70) {
-                    sp.hit = true;
-                    const smashX = width / 2 + (ai.x - engine.playerX) * 110;
-                    const propColor = sp.type === 'traffic_cone' ? '#f97316' : sp.type === 'oil_slick' ? '#0f172a' : sp.type === 'tire_stack' ? '#334155' : '#ef4444';
-                    for (let p = 0; p < 16; p++) {
-                      engine.particles.push({
-                        x: smashX + (Math.random() - 0.5) * 40,
-                        y: height * 0.62 + (Math.random() - 0.5) * 30,
-                        vx: (Math.random() - 0.5) * 550,
-                        vy: -Math.random() * 400 - 120,
-                        life: 1.1 + Math.random() * 0.5,
-                        color: Math.random() > 0.3 ? propColor : '#fbbf24',
-                      });
-                    }
-                    if (Math.abs(relZ) < 1000) {
-                      sound.playCrashImpact();
-                    }
-                    ai.slowedTimer = 0;
-                    ai.crashStunTimer = 0;
-                    continue;
-                  }
                 }
 
                 // Roadside scenery/props (billboards, grandstands, marshal posts) that are not on-track obstacles:
@@ -6880,7 +6727,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
                   ai.isCatchUpBeast = false;
                   ai.isAttacking = false;
 
-                  // Racing engine logic
+                  // Damage to AI rival car from obstacle ("ถ้ารถคู่แข่งพังก็ให้ขึ้นไฟไหม้ และอยู่เฉยๆ")
                   if (!ai.isDnf) {
                     const obsDamage =
                       sp.type === 'road_barrier' || sp.type === 'fallen_tree'
@@ -6888,7 +6735,8 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
                         : sp.type === 'tire_stack' || sp.type === 'tire_barrier'
                         ? 14
                         : 8;
-                    ai.health = Math.max(0, (ai.health ?? 100) - obsDamage);
+                    const aiMax = ai.maxHealth || getRivalMaxHealth(ai.id, ai.name);
+                    ai.health = Math.max(0, (ai.health ?? aiMax) - obsDamage);
                     // Severe wreck only occurs if car health actually drops to 0!
                     // (Fixed: removed unrealistic 210 km/h 1-hit insta-fire kill that caused all tail-end AI to wipe out)
                     const isSevereWreck = ai.health <= 0;
@@ -6901,7 +6749,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
                       if (Math.abs(relZ) < 800) {
                         sound.playEngineExplosionFire();
                       }
-                      setPitToastMessage(`🔥 ${ai.name} (${ai.tag}) engine exploded! RETIRED (DNF)`);
+                      setPitToastMessage(`🔥 ${ai.name} (${ai.tag}) รถพังไฟไหม้! RETIRED (DNF)`);
                     }
                   }
 
@@ -6934,13 +6782,13 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
           }
         }
 
-        // Racing engine logic
+        // Store peak cheat bonus across closest AI rivals for debug HUD (ข้อ 9)
         engine.debugClosestAiCheatBonus = maxCheatBonusThisFrame;
 
         // Check if ALL AI rivals have finished the race before the player
         const finishedAiCount = engine.aiCars.filter((a) => a.lapsCompleted >= engine.totalLaps).length;
         if (finishedAiCount >= engine.aiCars.length && !engine.isFinished && racePhase === 'racing') {
-          // Racing engine logic
+          // All rivals have crossed the finish line! Player timed out and is forfeited (P12 ที่โหล่)!
           engine.isFinished = true;
           sound.playCrashImpact();
 
@@ -7007,7 +6855,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
             let totalMs = engine.lapTimes.reduce((acc, t) => acc + t, 0);
             let missedPitPenalty = false;
 
-            // Racing engine logic
+            // Enforce Mandatory Pit Stop Rule (ต้องเข้า pit อย่างน้อย 1 ครั้ง)
             if (!engine.hasPitted) {
               totalMs += 30000; // 30s penalty
               missedPitPenalty = true;
@@ -7123,31 +6971,6 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
               sound.playTrophy();
             }
             setRacePhase('finished');
-
-            // Requirement: "แก้ไขให้หลังจบด่านที่ 18 ให้เข้าหน้า TROPHY CEREMONY อัตโนมัติ"
-            const isFinalGpRound = (activeGp.round || 1) >= (teamState.totalRaces || 18) || (activeGp.round || 1) >= (teamState.seasonCircuits?.length || 18);
-            if (isFinalGpRound) {
-              sound.playTrophy();
-              setTimeout(() => {
-                sound.stopOutRunEngine();
-                sound.stopRaceMusic();
-                sound.playCash();
-                sound.playTrophy();
-                onRaceCompleted({
-                  playerPosition: finalPos,
-                  bestLapTimeMs: engine.bestLapTimeMs || lapTime,
-                  totalTimeMs: totalMs,
-                  topSpeedKmH: engine.topSpeedRecorded,
-                  cleanLapsCount: lapsCount - Math.min(lapsCount, engine.offroadEventsCount),
-                  isDnf: false,
-                  bonusPrize: bonusPrizeEarned || 0,
-                  standings,
-                  winnerName: standings?.[0]?.name,
-                  winnerTeam: standings?.[0]?.team,
-                  winnerFlag: standings?.[0]?.flag,
-                });
-              }, 1200);
-            }
           } else {
             // Next Lap
             engine.lap++;
@@ -7245,12 +7068,12 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
         const playerRaceDist = Math.min(totalRaceDistance, effectiveLap * engine.trackLength + engine.position + playerCarOffset);
         const playerRaceProgress = Math.max(0, Math.min(1, playerRaceDist / totalRaceDistance));
 
-        // Racing engine logic
+        // Dynamic Random Rain Trigger mid-race/mid-lap ("เพิ่มระบบสุ่มฝน กลางlap")
         if (engine.rainScheduled && !engine.isRaining && playerRaceProgress >= engine.rainStartNormalizedDist && racePhase === 'racing') {
           engine.isRaining = true;
           sound.playThunderRain();
           addHudAlert('critical', '🌧️ SUDDEN DOWNPOUR', 'Box for wet tires immediately', '🌧️', 'WET');
-          setPitToastMessage('🌧️ Heavy downpour started! Enter PIT for WET TIRES');
+          setPitToastMessage('🌧️ ฝนเริ่มตกหนัก! รีบเข้า PIT เปลี่ยนยาง WET TIRES');
         }
 
         // Advance rain warning radar based on strategist decisions
@@ -7259,7 +7082,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
           if (playerRaceProgress >= engine.rainStartNormalizedDist - rainAdvanceNorm && playerRaceProgress < engine.rainStartNormalizedDist) {
             if (!(engine as any).hasAnnouncedRainRadar) {
               (engine as any).hasAnnouncedRainRadar = true;
-              addHudAlert('info', '🌧️ STRATEGIST WEATHER RADAR', 'Weather Radar: Rain inbound! Plan pit stop.', '🌧️', 'RAIN ADV');
+              addHudAlert('info', '🌧️ STRATEGIST WEATHER RADAR', 'เรดาร์สภาพอากาศ: ฝนกำลังจะตก เตรียมแผนเข้าพิท!', '🌧️', 'RAIN ADV');
             }
           }
         }
@@ -7294,13 +7117,13 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
 
         // Push priority alerts into central alert queue
         if (engine.isEngineOnFire) {
-          addHudAlert('critical', '🔥 ENGINE FIRE! DNF', 'Engine critically damaged • Vehicle stopped', '🔥', 'CRITICAL');
+          addHudAlert('critical', '🔥 ENGINE FIRE! DNF', 'เครื่องยนต์เสียหายหนัก • หยุดทำงาน', '🔥', 'CRITICAL');
         } else if (engine.tireBlown) {
-          addHudAlert('critical', '💥 FLAT TIRE!', 'Speed reduced 50% • Box for tires immediately!', '💥', 'FLAT TIRE');
+          addHudAlert('critical', '💥 FLAT TIRE • ยางแตก!', 'สปีดลดลง 50% รีบเข้า PIT ด่วน!', '💥', 'FLAT TIRE');
         } else if (isAquaplaningNow) {
-          addHudAlert('critical', '🌊 AQUAPLANING / SLIP', 'Wet track / oil slick • Loss of grip', '🌊', 'SLIP');
+          addHudAlert('critical', '🌊 รถลื่นไถล! SLIP', 'ถนนเปียก/คราบน้ำมัน สูญเสียการยึดเกาะ', '🌊', 'SLIP');
         } else if (isMidLapWindow) {
-          addHudAlert('critical', '📻 BOX THIS LAP • PIT ENTRY', `Prepare right turn (${Math.max(0, Math.round(distToPitM))}M)`, '📻', 'PIT');
+          addHudAlert('critical', '📻 BOX THIS LAP • เข้า PIT', `เตรียมเลี้ยวขวา (${Math.max(0, Math.round(distToPitM))}M)`, '📻', 'PIT');
         } else if (activeIncidentAi) {
           let incType = 'CRASHED BARRIER';
           if (activeIncidentAi.lastObstacleHitType === 'oil_slick' || (activeIncidentAi.spinAngle && activeIncidentAi.spinAngle > 0)) {
@@ -7318,7 +7141,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
           const gapM = Math.max(1, Math.round(Math.abs(playerTotalDistance - aDist) / 100));
           addHudAlert('rival', `🏎️ ${activeAttackAi.tag} ATTACKING!`, `Gap ${gapM}m • ${Math.round(activeAttackAi.speed)} km/h`, '🏎️');
         } else if (activeCatchUpRival && activeCatchUpRival.isTailgating) {
-          addHudAlert('rival', `🔥 ${activeCatchUpRival.tag} is right on our tail!`, 'TAILGATING • DEFEND POSITION', '🔥');
+          addHudAlert('rival', `🔥 ${activeCatchUpRival.tag} จี้ตูดเราแล้ว!`, 'TAILGATING • DEFEND POSITION', '🔥');
         } else if (activePersonalityAi) {
           const profile = getDriverPersonality(activePersonalityAi.id);
           addHudAlert('rival', `${profile.driverName} - ${profile.skillName}`, profile.tagline, profile.icon);
@@ -7745,7 +7568,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
             }
           }
 
-          // Racing engine logic
+          // 5b. Authentic Branching Pit Lane Roadway (ถนนแยกออกไปข้างนอกใกล้เส้นชัย)
           if (seg.isPitLaneZone) {
             let pitOffL = 1.20;
             let pitOffR = 1.76;
@@ -8036,48 +7859,6 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
       for (let vr = 0; vr < visibleRivals.length; vr++) {
         const item = visibleRivals[vr];
         drawAiCar(ctx, item.car, item.screenX, item.screenY, item.scale, timestamp);
-
-        // Render Driver Chat Bubble (e.g. Min Werstappen laughing at player)
-        if (item.car.chatBubble && item.car.chatBubbleUntil && item.car.chatBubbleUntil > nowMs) {
-          const bubbleText = item.car.chatBubble;
-          ctx.save();
-          ctx.font = '900 13px "Rajdhani", "Chakra Petch", sans-serif';
-          const textW = ctx.measureText(bubbleText).width;
-          const bW = Math.max(120, textW + 24);
-          const bH = 28;
-          const bX = Math.min(width - bW / 2 - 12, Math.max(bW / 2 + 12, item.screenX));
-          const bY = Math.max(40, item.screenY - Math.max(35, item.scale * 34000) - 26);
-
-          // Bubble drop shadow
-          ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
-          ctx.shadowBlur = 8;
-          ctx.shadowOffsetY = 3;
-
-          // Bubble background & border
-          ctx.fillStyle = '#ffffff';
-          ctx.strokeStyle = '#dc2626';
-          ctx.lineWidth = 2.5;
-          ctx.beginPath();
-          ctx.roundRect(bX - bW / 2, bY - bH / 2, bW, bH, 8);
-          ctx.fill();
-          ctx.stroke();
-
-          // Bubble triangle tail pointing down to car
-          ctx.shadowBlur = 0;
-          ctx.beginPath();
-          ctx.moveTo(bX - 6, bY + bH / 2);
-          ctx.lineTo(bX, bY + bH / 2 + 8);
-          ctx.lineTo(bX + 6, bY + bH / 2);
-          ctx.fillStyle = '#ffffff';
-          ctx.fill();
-
-          // Text inside bubble
-          ctx.fillStyle = '#0f172a';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(bubbleText, bX, bY);
-          ctx.restore();
-        }
       }
 
       // =======================================================================
@@ -8515,7 +8296,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
         ctx.restore();
       }
 
-      // Racing engine logic
+      // 12. Progressive Damage Smoke & Blazing Engine Fire ("ยิ่งใกล้พังยิ่งมีควันเยอะขึ้น", "รถไฟไหม้ และหยุดทำงาน")
       if (engine.isEngineOnFire) {
         // Enormous roaring fire flames leaping from engine cover and sidepods
         ctx.save();
@@ -8556,7 +8337,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
           ctx.fill();
         }
       } else if (engine.carHealth < (PLAYER_MAX_HEALTH * 0.75)) {
-        // Racing engine logic
+        // "ยิ่งใกล้พังยิ่งมีควันเยอะขึ้น" (Progression: 75% light smoke -> 50% dark smoke -> 25% heavy black smoke + sparks)
         const pHealth = engine.carHealth;
         const pHealthPct = (pHealth / PLAYER_MAX_HEALTH) * 100;
         const puffCount = pHealthPct < 25 ? 6 : pHealthPct < 50 ? 4 : 2;
@@ -8586,7 +8367,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
       ctx.restore();
 
       // =======================================================================
-      // Racing engine logic
+      // 7. FULL-SCREEN DYNAMIC RAIN CANVAS OVERLAY ("เพิ่มระบบสุ่มฝน กลางlap")
       // =======================================================================
       if (engine.isRaining) {
         const rIntensity = engine.rainIntensity;
@@ -8701,7 +8482,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
           <button
             onClick={() => setShowSettingsMenu((prev) => !prev)}
             className="p-2 rounded-xl bg-black/70 hover:bg-black/90 border border-slate-700/80 text-slate-300 hover:text-white transition cursor-pointer shadow-lg active:scale-95 flex items-center justify-center"
-            title="Race Settings & Quick Menu (Audio, Music, Weather, Rival Telemetry, Fullscreen)"
+            title="Race Settings & Quick Menu (เมนูตั้งค่า: เสียง เพลง สภาพอากาศ ข้อมูลคู่แข่ง เต็มจอ)"
           >
             <Settings className="w-4 h-4 text-amber-400" />
           </button>
@@ -8759,7 +8540,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
         />
       )}
 
-      {/* Racing Engine System */}
+      {/* 4.5. BOTTOM-LEFT: DEBUG OVERLAY (?debug=1) (ข้อ 9) */}
       {typeof window !== 'undefined' && window.location.search.includes('debug=1') && racePhase !== 'finished' && (
         <div className="absolute bottom-2 left-2 sm:bottom-3 sm:left-3 z-30 pointer-events-none bg-black/85 border border-red-500/60 p-2 rounded-lg text-[9px] font-mono text-white shadow-xl space-y-0.5 select-none">
           <div className="text-red-400 font-bold tracking-wider">🛠️ AI RUBBER-BAND DEBUG</div>
@@ -8769,7 +8550,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
         </div>
       )}
 
-      {/* Racing Engine System */}
+      {/* 5A. BOTTOM-LEFT: MOBILE STEERING CONTROLS (ปุ่มเลี้ยวอยู่ซ้าย) */}
       {racePhase !== 'finished' && (
         <div className="touch-controls-coarse absolute bottom-8 left-2 sm:bottom-10 sm:left-4 z-30 flex items-center gap-2 pointer-events-auto touch-none select-none">
           {/* Turn Left Button */}
@@ -8818,7 +8599,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
         </div>
       )}
 
-      {/* Racing Engine System */}
+      {/* 5B. BOTTOM-RIGHT: MOBILE GAS, NITRO & BRAKE CONTROLS (ปุ่ม Gas/nitro อยู่ด้านขวา) */}
       {racePhase !== 'finished' && (
         <div className="touch-controls-coarse absolute bottom-8 right-2 sm:bottom-10 sm:right-4 z-30 flex items-end gap-2 pointer-events-auto touch-none select-none">
           {/* Secondary Stack: NITRO (up) and BRAKE (down) */}
@@ -8894,7 +8675,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
           >
             <ArrowUp className="w-7 h-7 sm:w-8 sm:h-8 stroke-[3.5] drop-shadow-md" />
             <span className="text-xs sm:text-sm font-mono font-black tracking-widest mt-0.5">GAS</span>
-            <span className="text-[7.5px] font-mono text-emerald-200/90 tracking-tighter">GAS</span>
+            <span className="text-[7.5px] font-mono text-emerald-200/90 tracking-tighter">คันเร่ง</span>
           </button>
         </div>
       )}
@@ -8984,7 +8765,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
                 </button>
               </div>
 
-              {/* Racing Engine System */}
+              {/* Hidden Rain Toggle (Requirement 4: ซ่อนปุ่มสลับฝนไว้ในเมนูนั้น) */}
               <div className="flex items-center justify-between p-2 rounded-xl bg-slate-900/80 border border-slate-800">
                 <span className="text-slate-300">WEATHER SIMULATION</span>
                 <button
@@ -9015,14 +8796,14 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
         </div>
       )}
 
-      {/* Racing Engine System */}
+      {/* Floating Right Turn Chevron Prompt when approaching pit ("สัญญาณเตือนลูกศรสีแดง") */}
       {showPitWindowPrompt && racePhase === 'racing' && (
         <div className="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 z-30 pointer-events-none flex flex-col items-center gap-1 animate-pulse max-w-[85vw]">
           <div className="bg-gradient-to-r from-red-600 via-rose-600 to-red-600 text-white px-3.5 py-2 sm:px-5 sm:py-2.5 rounded-2xl border-2 border-yellow-300 shadow-[0_0_35px_rgba(239,68,68,0.9)] flex flex-col items-center">
             <span className="text-2xl sm:text-3xl font-black font-racing animate-bounce leading-none">▶▶▶</span>
             <span className="text-xs sm:text-sm font-racing font-black tracking-wider uppercase mt-0.5">PIT ENTRY</span>
             <span className="text-[10px] sm:text-xs font-mono font-black text-yellow-300">
-              {pitDistanceM !== null ? `${pitDistanceM}M • ` : '500M • '}TURN RIGHT INTO PIT
+              {pitDistanceM !== null ? `${pitDistanceM}M • ` : '500M • '}เลี้ยวขวาเข้า PIT
             </span>
           </div>
         </div>
@@ -9030,9 +8811,9 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
 
       {/* ======================================================================= */}
       {/* INTERACTIVE PIT STOP QUICK TIME EVENT (QTE) OVERLAY                      */}
-      {/* Racing Engine System */}
-      {/* Racing Engine System */}
-      {/* Racing Engine System */}
+      {/* "โดยความเร็วในการเปลี่ยน pits จะขึ้นอยู่กับ pits ที่ผู้เล่นจ้างมา           */}
+      {/* และมี quick time movement ให้กด wasd ลูกศร เช่น ซ้าย ขวา หน้า หลัง ยิ่งกดเร็ว ยิ่งได้ออก pits เร็ว" */}
+      {/* "แล้วก็ทำให้ quick event มีลูกศรที่ชัดเจนขึ้น"                            */}
       {/* ======================================================================= */}
       {pitQteActive && (
         <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/75 backdrop-blur-sm select-none p-2 sm:p-4 overflow-y-auto animate-in fade-in duration-150">
@@ -9065,7 +8846,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
                   ⏱️ {pitQteElapsed.toFixed(2)}s
                 </div>
                 <div className="text-[9px] font-mono text-slate-400">
-                  COMPLETED {pitQteIndex}/{pitQteSequence.length} ARROWS
+                  เสร็จแล้ว {pitQteIndex}/{pitQteSequence.length} ลูกศร
                 </div>
               </div>
             </div>
@@ -9074,10 +8855,10 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
             <div className="flex items-center justify-between px-2.5 py-1 rounded-xl bg-amber-950/70 border border-amber-500/60 text-[10px] font-mono shadow-sm">
               <div className="flex items-center gap-1.5 text-amber-200 truncate">
                 <span className="text-amber-400 font-bold">⚡ QTE:</span>
-                <span className="truncate">Press Arrow keys / WASD sequence to release car</span>
+                <span className="truncate">กดลูกศร/WASD ให้ครบเพื่อปล่อยรถออก PIT</span>
               </div>
               <div className="flex items-center gap-1 text-cyan-300 font-bold shrink-0 ml-2">
-                <span>{pitQteSequence.length} ARROWS</span>
+                <span>{pitQteSequence.length} ลูกศร</span>
               </div>
             </div>
 
@@ -9092,16 +8873,16 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
               {pitQteSequence.map((reqDir, sIdx) => {
                 const isDone = sIdx < pitQteIndex;
                 const isActive = sIdx === pitQteIndex;
-                const task = PIT_STOP_TASKS[sIdx] || { th: `Step ${sIdx + 1}` };
+                const task = PIT_STOP_TASKS[sIdx] || { th: `ขั้นตอนที่ ${sIdx + 1}` };
 
                 const dirMeta =
                   reqDir === 'UP'
-                    ? { nameTh: 'UP (W)', keys: 'W/↑', color: 'text-cyan-300', bgActive: 'border-cyan-400 bg-cyan-950/90 shadow-[0_0_15px_rgba(6,182,212,0.6)]' }
+                    ? { nameTh: 'หน้า', keys: 'W/↑', color: 'text-cyan-300', bgActive: 'border-cyan-400 bg-cyan-950/90 shadow-[0_0_15px_rgba(6,182,212,0.6)]' }
                     : reqDir === 'DOWN'
-                    ? { nameTh: 'DOWN (S)', keys: 'S/↓', color: 'text-amber-300', bgActive: 'border-amber-400 bg-amber-950/90 shadow-[0_0_15px_rgba(245,158,11,0.6)]' }
+                    ? { nameTh: 'หลัง', keys: 'S/↓', color: 'text-amber-300', bgActive: 'border-amber-400 bg-amber-950/90 shadow-[0_0_15px_rgba(245,158,11,0.6)]' }
                     : reqDir === 'LEFT'
-                    ? { nameTh: 'LEFT (A)', keys: 'A/←', color: 'text-purple-300', bgActive: 'border-purple-400 bg-purple-950/90 shadow-[0_0_15px_rgba(168,85,247,0.6)]' }
-                    : { nameTh: 'RIGHT (D)', keys: 'D/→', color: 'text-rose-300', bgActive: 'border-rose-400 bg-rose-950/90 shadow-[0_0_15px_rgba(244,63,94,0.6)]' };
+                    ? { nameTh: 'ซ้าย', keys: 'A/←', color: 'text-purple-300', bgActive: 'border-purple-400 bg-purple-950/90 shadow-[0_0_15px_rgba(168,85,247,0.6)]' }
+                    : { nameTh: 'ขวา', keys: 'D/→', color: 'text-rose-300', bgActive: 'border-rose-400 bg-rose-950/90 shadow-[0_0_15px_rgba(244,63,94,0.6)]' };
 
                 return (
                   <div
@@ -9179,19 +8960,19 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
                 <span className={`text-[10px] font-mono uppercase font-bold mb-0.5 tracking-wider ${
                   pitQteLockout ? 'text-red-400' : 'text-amber-300'
                 }`}>
-                  CURRENT PROMPT (PRESS NOW!)
+                  CURRENT PROMPT (กดปุ่มนี้ทันที!)
                 </span>
                 
                 {(() => {
                   const curDir = pitQteSequence[pitQteIndex];
                   const curMeta =
                     curDir === 'UP'
-                      ? { nameTh: 'UP (W)', keyChar: 'W', arrowSymbol: '↑', color: 'text-cyan-400', glow: 'shadow-[0_0_20px_rgba(6,182,212,0.8)] border-cyan-400' }
+                      ? { nameTh: 'ชี้ขึ้น (หน้า)', keyChar: 'W', arrowSymbol: '↑', color: 'text-cyan-400', glow: 'shadow-[0_0_20px_rgba(6,182,212,0.8)] border-cyan-400' }
                       : curDir === 'DOWN'
-                      ? { nameTh: 'DOWN (S)', keyChar: 'S', arrowSymbol: '↓', color: 'text-amber-400', glow: 'shadow-[0_0_20px_rgba(245,158,11,0.8)] border-amber-400' }
+                      ? { nameTh: 'ชี้ลง (หลัง)', keyChar: 'S', arrowSymbol: '↓', color: 'text-amber-400', glow: 'shadow-[0_0_20px_rgba(245,158,11,0.8)] border-amber-400' }
                       : curDir === 'LEFT'
-                      ? { nameTh: 'LEFT (A)', keyChar: 'A', arrowSymbol: '←', color: 'text-purple-400', glow: 'shadow-[0_0_20px_rgba(168,85,247,0.8)] border-purple-400' }
-                      : { nameTh: 'RIGHT (D)', keyChar: 'D', arrowSymbol: '→', color: 'text-rose-400', glow: 'shadow-[0_0_20px_rgba(244,63,94,0.8)] border-rose-400' };
+                      ? { nameTh: 'ชี้ซ้าย', keyChar: 'A', arrowSymbol: '←', color: 'text-purple-400', glow: 'shadow-[0_0_20px_rgba(168,85,247,0.8)] border-purple-400' }
+                      : { nameTh: 'ชี้ขวา', keyChar: 'D', arrowSymbol: '→', color: 'text-rose-400', glow: 'shadow-[0_0_20px_rgba(244,63,94,0.8)] border-rose-400' };
 
                   return (
                     <div className="flex items-center gap-3 sm:gap-4 mt-0.5">
@@ -9233,7 +9014,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
                           <div className="px-3 py-1 rounded-lg bg-slate-800 border border-slate-300 text-white font-mono font-black text-lg sm:text-xl shadow-[0_2px_0_#334155]">
                             {curMeta.keyChar}
                           </div>
-                          <span className="text-slate-400 font-mono text-[10px] font-bold uppercase">OR</span>
+                          <span className="text-slate-400 font-mono text-[10px] font-bold uppercase">หรือ</span>
                           <div className="px-3 py-1 rounded-lg bg-slate-800 border border-slate-300 text-white font-mono font-black text-lg sm:text-xl shadow-[0_2px_0_#334155]">
                             {curMeta.arrowSymbol}
                           </div>
@@ -9267,7 +9048,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
                   <line x1="20" y1="12" x2="4" y2="12" />
                   <polyline points="11 19 4 12 11 5" />
                 </svg>
-                <span>LEFT (A)</span>
+                <span>ซ้าย (A)</span>
               </button>
               <button
                 onClick={() => handlePitQteInput('UP')}
@@ -9277,7 +9058,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
                   <line x1="12" y1="20" x2="12" y2="4" />
                   <polyline points="5 11 12 4 19 11" />
                 </svg>
-                <span>UP (W)</span>
+                <span>หน้า (W)</span>
               </button>
               <button
                 onClick={() => handlePitQteInput('DOWN')}
@@ -9287,7 +9068,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
                   <line x1="12" y1="4" x2="12" y2="20" />
                   <polyline points="19 13 12 20 5 13" />
                 </svg>
-                <span>DOWN (S)</span>
+                <span>หลัง (S)</span>
               </button>
               <button
                 onClick={() => handlePitQteInput('RIGHT')}
@@ -9297,7 +9078,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
                   <line x1="4" y1="12" x2="20" y2="12" />
                   <polyline points="13 5 20 12 13 19" />
                 </svg>
-                <span>RIGHT (D)</span>
+                <span>ขวา (D)</span>
               </button>
             </div>
           </div>
@@ -9305,8 +9086,8 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
       )}
 
       {/* ======================================================================= */}
-      {/* Racing Engine System */}
-      {/* Racing Engine System */}
+      {/* STARTING GANTRY OVERHEAD RIG (โครงเหล็กสะพานไฟสัญญาณด้านบน ไม่มีสีดำทึบบังหน้า) */}
+      {/* Tween slide-up when race starts ("เมื่อเริ่มไป ให้ tween ไฟสัญญาณออกตัวออกไปจากหน้าจอ") */}
       {/* ======================================================================= */}
       {gantryMounted && (
         <div
@@ -9333,7 +9114,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
               </div>
             </div>
 
-            {/* Racing Engine System */}
+            {/* 2. Main Overhead Steel Truss Gantry Beam (โครงเหล็กสะพานใหญ่ พาดขวางขอบบน) */}
             <div className="relative flex items-center justify-between gap-4 px-4 sm:px-8 py-1.5 sm:py-2 bg-gradient-to-b from-[#2e3440] via-[#1a1f29] to-[#0d1017] border-b-2 border-x-2 border-neutral-500 rounded-b-xl shadow-[0_10px_35px_rgba(0,0,0,0.85)] min-w-[310px] sm:min-w-[460px]">
               {/* Left Hazard Stripes & Bolts */}
               <div className="flex items-center gap-2">
@@ -9362,7 +9143,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
               </div>
             </div>
 
-            {/* Racing Engine System */}
+            {/* 3. Five Hanging Vertical Metal Light Pods (ไฟสัญญาณ 5 ช่อง พร้อมขายึดเหล็ก) */}
             <div className="relative -mt-0.5 flex items-center justify-center gap-2 sm:gap-3 px-3.5 sm:px-6 py-2 bg-gradient-to-b from-[#141822] via-[#0b0e14] to-[#04060a] border-2 border-neutral-700 rounded-xl shadow-[0_12px_40px_rgba(0,0,0,0.95)]">
               {[1, 2, 3, 4, 5].map((lightIdx) => {
                 const isLit = countdownLights >= lightIdx && countdownLights < 6;
@@ -9413,12 +9194,12 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
               </span>
             </div>
 
-            {/* Racing Engine System */}
+            {/* 5. Stage Objectives Banner (ข้อ 5: แสดงใน HUD ก่อนออกตัว) */}
             {countdownLights < 6 && stageObjectives.length > 0 && (
               <div className="mt-2 p-2 px-3 rounded-xl bg-black/85 border border-amber-500/40 shadow-xl flex items-center gap-3 font-mono text-[11px] max-w-[92vw]">
                 <div className="flex items-center gap-1 text-amber-400 font-bold uppercase shrink-0">
                   <span>🎯</span>
-                  <span>STAGE BONUS OBJECTIVES:</span>
+                  <span>เป้าหมายโบนัส:</span>
                 </div>
                 <div className="flex flex-wrap items-center gap-2 text-slate-200">
                   {stageObjectives.map((obj, oIdx) => (
@@ -9476,7 +9257,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
 
       {/* ======================================================================= */}
       {/* 4. RACE COMPLETE CELEBRATION / RESULTS OVERLAY                          */}
-      {/* Racing Engine System */}
+      {/* NO DARK TINT OVERLAY (ไม่มีสีดำทึบ), DOCKED AS SLEEK SIDE PANEL ON THE RIGHT (UI อยู่ข้างๆ ขวา) */}
       {/* ======================================================================= */}
       {racePhase === 'finished' && raceSummary && (
         <div className="absolute inset-0 z-40 select-none pointer-events-none overflow-hidden bg-transparent">
@@ -9484,7 +9265,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
           {raceSummary.position <= 3 && !raceSummary.isDnfFireLoss && !raceSummary.isTimedOutLoss && (
             <ConfettiCelebration rank={raceSummary.position} />
           )}
-          {/* Racing Engine System */}
+          {/* SIDE PANEL: ALL RESULTS & STATS DOCKED CLEANLY ON THE RIGHT (UI อยู่ข้างๆ ขวา ไม่บังรถ) */}
           <div className="absolute top-2 bottom-2 right-2 sm:top-3 sm:bottom-3 sm:right-5 w-[94vw] max-w-[390px] sm:max-w-[430px] z-50 flex flex-col pointer-events-auto bg-[#080d17]/95 backdrop-blur-md border-2 border-slate-700/90 rounded-2xl p-3 sm:p-3.5 shadow-[0_20px_50px_rgba(0,0,0,0.95)] animate-in slide-in-from-right-8 duration-500 font-racing max-h-[calc(100vh-1rem)] sm:max-h-[calc(100vh-1.5rem)] overflow-hidden">
             {/* Header: Giant Rank & Identity (PINNED AT TOP) */}
             <div className="shrink-0 border-b border-slate-800 pb-2">
@@ -9547,7 +9328,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
                     raceSummary.isDnfFireLoss ? 'text-red-400 font-black' : 'text-slate-300'
                   }`}>
                     {raceSummary.isDnfFireLoss
-                      ? 'ENGINE FIRE (RETIRED)'
+                      ? 'ENGINE FIRE (แพ้)'
                       : raceSummary.isTimedOutLoss
                       ? 'TIME EXPIRED'
                       : raceSummary.position === 1
@@ -9570,16 +9351,16 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
                 <span>RD {activeGp.round}</span>
               </div>
 
-              {/* Racing Engine System */}
+              {/* DNF Engine Fire Reason Banner ("ขึ้นหน้าแพ้") */}
               {raceSummary.isDnfFireLoss && (
                 <div className="mt-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-red-950 via-rose-950 to-red-950 border-2 border-red-500 text-red-200 text-[10px] font-mono flex items-center gap-2 shadow-lg shadow-red-950/80 animate-pulse">
                   <span className="text-lg">🔥</span>
                   <div className="flex flex-col text-left">
                     <span className="font-bold text-red-300 uppercase">
-                      ENGINE DESTROYED BY DAMAGE • RETIRED FROM RACE
+                      รถพังไฟไหม้และหยุดทำงาน • แพ้การแข่งขัน
                     </span>
                     <span className="text-[9px] text-red-200/90 font-thai">
-                      {raceSummary.fireDnfReason || 'Severe structural and engine failure from collisions (ENGINE FIRE DNF)'}
+                      {raceSummary.fireDnfReason || 'ชนสะสมจนเครื่องยนต์เสียหายหนัก รถไฟไหม้และหยุดทำงาน'}
                     </span>
                   </div>
                 </div>
@@ -9714,7 +9495,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
                 </div>
               )}
 
-              {/* Racing Engine System */}
+              {/* 🎯 Stage Bonus Objectives Results (ข้อ 5) */}
               {raceSummary.objectivesSummary && raceSummary.objectivesSummary.length > 0 && (
                 <div className="bg-[#0e1420] p-2 rounded-xl border border-slate-800 space-y-1">
                   <div className="flex items-center justify-between text-[9px] font-mono uppercase text-slate-400 font-bold">
@@ -9740,7 +9521,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
                           <span className="truncate">{item.obj.titleTh}</span>
                         </span>
                         <span className={`font-bold shrink-0 ${item.completed ? 'text-emerald-400' : 'text-slate-500'}`}>
-                          {item.completed ? `✓ +${formatMoney(item.obj.rewardMoney)}` : '✗ MISSED'}
+                          {item.completed ? `✓ +${formatMoney(item.obj.rewardMoney)}` : '✗ ไม่สำเร็จ'}
                         </span>
                       </div>
                     ))}
@@ -9752,7 +9533,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
               {raceSummary.weakestStatDiagnosis && (
                 <div className="bg-[#1a1215] p-2 rounded-xl border border-red-900/50 text-[10px] font-mono text-red-200">
                   <div className="flex items-center gap-1 text-[9px] text-amber-400 font-bold uppercase mb-0.5">
-                    <span>⚙️</span> TELEMETRY LOSS DIAGNOSIS & RACE ADVICE:
+                    <span>⚙️</span> วินิจฉัยจุดที่ทำให้เสียเวลามากที่สุด:
                   </div>
                   <p className="leading-tight text-slate-200">
                     {raceSummary.weakestStatDiagnosis.adviceTh}
@@ -9769,7 +9550,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
                   className="w-full py-2.5 bg-gradient-to-r from-red-600 via-rose-600 to-red-600 hover:from-red-500 hover:to-rose-500 text-white font-racing font-black text-xs sm:text-sm uppercase tracking-wider rounded-xl shadow-xl shadow-red-950/80 flex items-center justify-center gap-2 cursor-pointer transition active:scale-95 border-2 border-red-400/80 animate-pulse"
                 >
                   <RotateCcw className="w-4 h-4 text-white" />
-                  <span>🔁 RETRY THIS ROUND →</span>
+                  <span>🔁 แข่งด่านนี้ใหม่ (RETRY THIS ROUND) →</span>
                 </button>
               ) : (
                 <button
@@ -9794,11 +9575,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
                   className="w-full py-2.5 sm:py-3 bg-gradient-to-r from-emerald-600 via-emerald-500 to-emerald-600 hover:from-emerald-500 hover:to-emerald-400 text-white font-racing font-black text-xs sm:text-sm uppercase tracking-wider rounded-xl shadow-xl shadow-emerald-950/80 flex items-center justify-center gap-2 cursor-pointer transition active:scale-95 border-2 border-emerald-400/60"
                 >
                   <CheckCircle2 className="w-4 h-4 text-white" />
-                  <span>
-                    {(activeGp.round || 1) >= (teamState.totalRaces || 18)
-                      ? '🏆 ENTERING CHAMPIONSHIP TROPHY CEREMONY... →'
-                      : 'CLAIM REWARDS & ADVANCE TO NEXT ROUND →'}
-                  </span>
+                  <span>CLAIM REWARDS & ADVANCE TO NEXT ROUND →</span>
                 </button>
               )}
 
@@ -9831,7 +9608,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
                   }}
                   className="flex-1 py-1.5 bg-[#121824] hover:bg-[#182030] text-slate-300 hover:text-white font-racing font-bold text-xs uppercase tracking-wider rounded-xl border border-slate-700 transition cursor-pointer text-center"
                 >
-                  {raceSummary.isDnfFireLoss ? 'RETIRE TO HUB' : 'EXIT TO CHAMPIONSHIP'}
+                  {raceSummary.isDnfFireLoss ? 'ยอมแพ้กลับสู่ HUB' : 'EXIT TO CHAMPIONSHIP'}
                 </button>
               </div>
             </div>
@@ -9855,7 +9632,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
                     </span>
                   </h3>
                   <p className="text-xs text-slate-400 font-thai">
-                    Unique driving personalities, aggressive traits, and signature moves of all 11 F1 rivals
+                    บุคลิกภาพเฉพาะตัว สไตล์การขับขี่ และไม้ตายเฉพาะตัวของคู่แข่ง F1 ทั้ง 11 คน
                   </p>
                 </div>
               </div>
@@ -9893,6 +9670,11 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
                             >
                               #{p.number} {p.driverTag}
                             </span>
+                            {isBossRival(undefined, p.driverName) && (
+                              <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-amber-500/25 text-amber-300 border border-amber-500/50 shadow-xs">
+                                ⚡ HP: 3,000 • SPEED +10%
+                              </span>
+                            )}
                           </div>
                           <span className="text-[11px] text-slate-400 font-mono">
                             {p.teamName}
@@ -9920,7 +9702,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
                   {/* Special Skill */}
                   <div className="mt-2.5 pt-2 border-t border-slate-800/80 flex items-start gap-2">
                     <span className="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold shrink-0">
-                      Special Ability: {p.skillName}
+                      ไม้ตาย: {p.skillName}
                     </span>
                     <p className="text-[11px] text-slate-300 font-thai leading-snug">
                       {p.skillDescription}

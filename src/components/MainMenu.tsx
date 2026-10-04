@@ -14,8 +14,6 @@ import {
   Timer,
   ChevronRight,
   Flag,
-  Save,
-  Play,
 } from 'lucide-react';
 import { TeamState } from '../types/game';
 import { calculateCarOverall, formatMoney, calculatePitStopDuration } from '../utils/calculations';
@@ -34,9 +32,9 @@ interface MainMenuProps {
   onOpenTab: (tab: 'drivers' | 'strategist' | 'pitcrew' | 'car' | 'academy') => void;
   onReplayIntro?: () => void;
   onOpenSaveSlots?: () => void;
-  onOpenTrophyCeremony?: () => void;
   isIntroActive?: boolean;
   onOpenChampionshipSubTab?: (subTab: 'race-day' | 'standings' | 'calendar' | 'auto-race') => void;
+  onOpenTrophyCeremony?: () => void;
 }
 
 export const MainMenu: React.FC<MainMenuProps> = ({
@@ -45,14 +43,35 @@ export const MainMenu: React.FC<MainMenuProps> = ({
   onOpenTab,
   onReplayIntro,
   onOpenSaveSlots,
-  onOpenTrophyCeremony,
   isIntroActive = false,
   onOpenChampionshipSubTab,
+  onOpenTrophyCeremony,
 }) => {
   const carOverall = calculateCarOverall(teamState.car);
   const pitStopPreview = calculatePitStopDuration(teamState.pitCrew.speed, teamState.pitCrew.precision);
   const totalRaces = teamState.totalRaces || 18;
   const nextGp = teamState.currentRound <= totalRaces ? teamState.currentRound : totalRaces;
+
+  // Determine if Stage 18 has been won
+  const hasWonStage18 = React.useMemo(() => {
+    const round18Circuit = teamState.seasonCircuits?.find((c) => c.round === 18);
+    if (round18Circuit && (round18Circuit.isCompleted || round18Circuit.finalized)) {
+      return true;
+    }
+
+    const hasR18Log = teamState.seasonRecords?.some((season) =>
+      season.raceLogs?.some((log) => log.round === 18)
+    );
+    if (hasR18Log) {
+      return true;
+    }
+
+    if ((teamState.currentRound || 1) > 18) {
+      return true;
+    }
+
+    return false;
+  }, [teamState]);
 
   const activeCircuits =
     teamState.seasonCircuits && teamState.seasonCircuits.length === 18
@@ -128,45 +147,57 @@ export const MainMenu: React.FC<MainMenuProps> = ({
               </span>
             </div>
 
-            {/* PROMINENT ACTION BUTTONS: TRY NEW SAVE, TROPHY CEREMONY, AND RACE NOW */}
+            {/* DYNAMIC ACTION BUTTONS:
+                Before winning Stage 18:
+                - Show standard "CHAMPIONSHIP & RACE HUB" button
+                - Neither "VIEW TROPHY CEREMONY" nor "Try New Save" will show!
+                After winning Stage 18:
+                - Replace Race Hub button with "TRY NEW SAVE"
+                - Show "VIEW TROPHY CEREMONY" button (allows re-watching the trophy ceremony from Main Menu)
+            */}
             <div className="mt-6 sm:mt-7 flex flex-wrap items-center gap-3">
-              {/* 1. TRY NEW SAVE BUTTON (Change race hub button to try new save) */}
-              <button
-                type="button"
-                onClick={() => {
-                  sound.playClick();
-                  onOpenSaveSlots?.();
-                }}
-                className="group relative inline-flex items-center justify-center gap-2.5 px-6 sm:px-7 py-3 sm:py-3.5 rounded-xl bg-gradient-to-r from-blue-700 via-indigo-600 to-blue-700 hover:from-blue-600 hover:to-indigo-500 text-white font-black font-racing uppercase tracking-wider text-sm sm:text-base shadow-[0_0_20px_rgba(59,130,246,0.45)] hover:shadow-[0_0_30px_rgba(59,130,246,0.7)] border-2 border-blue-400/60 transition-all duration-200 cursor-pointer active:scale-95"
-              >
-                <Save className="w-4 h-4 text-blue-200 group-hover:scale-110 transition-transform" />
-                <span>TRY NEW SAVE</span>
-              </button>
+              {hasWonStage18 ? (
+                <>
+                  {/* VIEW TROPHY CEREMONY BUTTON */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      sound.playClick();
+                      sound.playTrophy();
+                      onOpenTrophyCeremony?.();
+                    }}
+                    className="group relative inline-flex items-center justify-center gap-3 px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 hover:from-amber-400 hover:to-yellow-300 text-slate-950 font-black font-racing uppercase tracking-wider text-base sm:text-lg shadow-[0_0_25px_rgba(245,158,11,0.6)] hover:shadow-[0_0_35px_rgba(245,158,11,0.8)] border-2 border-yellow-300/80 transition-all duration-200 cursor-pointer active:scale-95"
+                  >
+                    <Trophy className="w-5 h-5 text-amber-950 group-hover:scale-110 transition-transform" />
+                    <span>VIEW TROPHY CEREMONY</span>
+                    <Sparkles className="w-5 h-5 text-amber-900 group-hover:rotate-12 transition-transform" />
+                  </button>
 
-              {/* 2. VIEW CHAMPIONSHIP TROPHY BUTTON (View trophy ceremony button on main menu) */}
-              <button
-                type="button"
-                onClick={() => {
-                  sound.playClick();
-                  sound.playTrophy();
-                  onOpenTrophyCeremony?.();
-                }}
-                className="group relative inline-flex items-center justify-center gap-2.5 px-6 sm:px-7 py-3 sm:py-3.5 rounded-xl bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-600 hover:from-amber-500 hover:to-yellow-400 text-slate-950 font-black font-racing uppercase tracking-wider text-sm sm:text-base shadow-[0_0_20px_rgba(245,158,11,0.5)] hover:shadow-[0_0_35px_rgba(245,158,11,0.8)] border-2 border-yellow-300 transition-all duration-200 cursor-pointer active:scale-95"
-              >
-                <Trophy className="w-5 h-5 text-amber-950 group-hover:scale-125 transition-transform" />
-                <span>VIEW TROPHY CEREMONY</span>
-              </button>
-
-              {/* 3. RACE CURRENT GRAND PRIX BUTTON */}
-              <button
-                type="button"
-                onClick={handleRaceNow}
-                className="group relative inline-flex items-center justify-center gap-2.5 px-6 sm:px-7 py-3 sm:py-3.5 rounded-xl bg-gradient-to-r from-red-600 via-red-500 to-red-600 hover:from-red-500 hover:to-red-600 text-white font-black font-racing uppercase tracking-wider text-sm sm:text-base shadow-[0_0_20px_rgba(239,68,68,0.5)] hover:shadow-[0_0_30px_rgba(239,68,68,0.7)] border-2 border-red-400/60 transition-all duration-200 cursor-pointer active:scale-95"
-              >
-                <Play className="w-4 h-4 text-white group-hover:scale-110 transition-transform" />
-                <span>RACE ROUND {nextGp}</span>
-                <ArrowRight className="w-4 h-4 text-white/90 group-hover:translate-x-1 transition-transform" />
-              </button>
+                  {/* TRY NEW SAVE BUTTON (Replaces Race Hub) */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      sound.playClick();
+                      onOpenSaveSlots?.();
+                    }}
+                    className="group relative inline-flex items-center justify-center gap-3 px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 hover:from-indigo-500 hover:to-purple-500 text-white font-black font-racing uppercase tracking-wider text-base sm:text-lg shadow-[0_0_25px_rgba(99,102,241,0.5)] hover:shadow-[0_0_35px_rgba(99,102,241,0.7)] border-2 border-indigo-400/60 transition-all duration-200 cursor-pointer active:scale-95"
+                  >
+                    <Users className="w-5 h-5 text-indigo-200 group-hover:scale-110 transition-transform" />
+                    <span>TRY NEW SAVE</span>
+                    <ArrowRight className="w-5 h-5 text-white/90 group-hover:translate-x-1.5 transition-transform" />
+                  </button>
+                </>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleRaceNow}
+                  className="group relative inline-flex items-center justify-center gap-3 px-7 sm:px-9 py-3.5 sm:py-4 rounded-xl bg-gradient-to-r from-red-600 via-red-500 to-red-600 hover:from-red-500 hover:to-red-600 text-white font-black font-racing uppercase tracking-wider text-base sm:text-lg shadow-[0_0_25px_rgba(239,68,68,0.5)] hover:shadow-[0_0_35px_rgba(239,68,68,0.7)] border-2 border-red-400/60 transition-all duration-200 cursor-pointer active:scale-95"
+                >
+                  <Trophy className="w-5 h-5 text-amber-300 group-hover:scale-110 transition-transform" />
+                  <span>CHAMPIONSHIP & RACE HUB</span>
+                  <ArrowRight className="w-5 h-5 text-white/90 group-hover:translate-x-1.5 transition-transform" />
+                </button>
+              )}
             </div>
           </div>
 
@@ -229,7 +260,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({
               <span className="text-xs font-mono text-slate-400 font-bold uppercase">/ 99 OVR</span>
             </div>
 
-            {/* Prominent Large Engine & Aero Stats (As requested: Larger and clearer) */}
+            {/* Prominent Large Engine & Aero Stats (As requested: ใหญ่ขึ้น ชัดเจนขึ้น) */}
             <div className="mt-4 space-y-3 font-mono">
               {/* Engine */}
               <div className="bg-[#070b10]/45 backdrop-blur-xs p-3 rounded-xl border border-slate-800/60">
@@ -454,9 +485,9 @@ export const MainMenu: React.FC<MainMenuProps> = ({
               </div>
               <div className="text-right">
                 <span className="text-xs font-mono font-bold text-cyan-400 block">
-                  🎯 {getPitQteArrowCount(teamState.pitCrew.overall || Math.round((teamState.pitCrew.speed + teamState.pitCrew.precision) / 2))} Arrows
+                  🎯 {getPitQteArrowCount(teamState.pitCrew.overall || Math.round((teamState.pitCrew.speed + teamState.pitCrew.precision) / 2))} ลูกศร
                 </span>
-                <span className="text-[10px] font-mono text-slate-500">Pit Stop Minigame</span>
+                <span className="text-[10px] font-mono text-slate-500">มินิเกมเข้า Pits</span>
               </div>
             </div>
 
