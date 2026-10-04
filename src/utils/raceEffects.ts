@@ -162,33 +162,33 @@ export function getCarStatUpgradeImpact(statKey: CarStatKey): {
   switch (statKey) {
     case 'engine':
       return {
-        shortEffectTh: '+0.24 กม./ชม. ความเร็วสูงสุด',
-        perLevelTh: '+0.24 กม./ชม. • อัตราเร่ง +6.5',
-        detailTh: 'เพิ่มความเร็วปลายทางตรงและอัตราเร่งออกจากโค้ง',
+        shortEffectTh: '+0.24 km/h Top Speed',
+        perLevelTh: '+0.24 km/h • Acceleration +6.5',
+        detailTh: 'Increases top speed on straights and corner exit acceleration.',
       };
     case 'aero':
       return {
-        shortEffectTh: '+0.12 กม./ชม. & โบนัส DRS +0.18',
-        perLevelTh: '+0.12 กม./ชม. • โบนัส DRS/Nitro +0.18',
-        detailTh: 'เพิ่มแรงกดและประสิทธิภาพเมื่อเปิดใช้ DRS/Nitro',
+        shortEffectTh: '+0.12 km/h & DRS Bonus +0.18',
+        perLevelTh: '+0.12 km/h • DRS/Nitro Bonus +0.18',
+        detailTh: 'Improves downforce and aerodynamic efficiency when activating DRS/Nitro.',
       };
     case 'brakes':
       return {
-        shortEffectTh: 'เบรกดีขึ้น +8.5 พลังเบรก',
-        perLevelTh: '+8.5 พลังหยุด • ลดความเร็วที่เสียก่อนเข้าโค้ง',
-        detailTh: 'เบรกลึกแซงคู่แข่งในโค้งหักศอก และคุมจังหวะเบรกแม่นยำ',
+        shortEffectTh: '+8.5 Braking Force',
+        perLevelTh: '+8.5 Stopping Power • Later braking point into turns',
+        detailTh: 'Brake deeper into hairpins to overtake rivals and stabilize stopping points.',
       };
     case 'suspension':
       return {
-        shortEffectTh: 'รูดเคิร์บไม่เสียความเร็ว & ลดลื่น',
-        perLevelTh: 'ทรงตัวนิ่งขึ้น • ลดการลื่นไถลตอนฝนตก',
-        detailTh: 'ลดความเร็วที่สูญเสียเมื่อขึ้นขอบทางหรือลงหญ้า และเพิ่มการเกาะถนนบนแทร็กเปียก',
+        shortEffectTh: 'Kerb Stability & Reduced Slip',
+        perLevelTh: 'Stabilized chassis • Reduced slip during rain',
+        detailTh: 'Reduces speed lost when running over kerbs/verges and boosts wet grip.',
       };
     case 'chassis':
       return {
-        shortEffectTh: 'การเลี้ยวฉับไวขึ้น +0.065',
-        perLevelTh: '+0.065 ความคล่องตัว • โครงสร้างทนทาน',
-        detailTh: 'โยกเปลี่ยนเลนหลบสิ่งกีดขวางได้คมกริบและควบคุมรถนิ่งในโค้ง',
+        shortEffectTh: '+0.065 Agility',
+        perLevelTh: '+0.065 Agility • Structural Durability',
+        detailTh: 'Sharp lane switching to dodge obstacles and composed high-G cornering.',
       };
   }
 }
@@ -229,19 +229,19 @@ export function diagnoseWeakestStat(
   }
 
   const statNames: Record<CarStatKey, string> = {
-    engine: 'เครื่องยนต์ (Engine)',
-    aero: 'แอร์โรไดนามิกส์ (Aero)',
-    brakes: 'ระบบเบรก (Brakes)',
-    suspension: 'ระบบช่วงล่าง (Suspension)',
-    chassis: 'แชสซี (Chassis)',
+    engine: 'Engine PU',
+    aero: 'Aerodynamics',
+    brakes: 'Brakes',
+    suspension: 'Suspension',
+    chassis: 'Chassis',
   };
 
   const adviceMap: Record<CarStatKey, string> = {
-    engine: '📉 ความเร็วปลายและอัตราเร่งไม่พอ เสียเวลาบนทางตรงยาวเมื่อเทียบกับคู่แข่ง แนะนำอัพเกรด Engine',
-    aero: '📉 แรงกดอากาศพลศาสตร์ไม่พอ เสียความเร็วในโค้งไฮสปีด แนะนำอัพเกรด Aero เพื่อสร้างแรงกด',
-    brakes: '📉 ระบบเบรกขาดประสิทธิภาพ เสียเวลาในจุดเบรกหนักของสนามนี้มากที่สุด แนะนำอัพเกรด Brakes ก่อนแข่งรอบถัดไป',
-    suspension: '📉 การซับแรงกระแทกต่ำ เสียความเร็วจากการรูดเคิร์บและการทรงตัว แนะนำอัพเกรด Suspension',
-    chassis: '📉 ความคล่องตัวน้อย โยกเปลี่ยนไลน์แซงและเข้าโค้งยังหน่วง แนะนำอัพเกรด Chassis',
+    engine: '📉 Top speed and acceleration lag behind rivals on long straights. Upgrade Engine PU.',
+    aero: '📉 Insufficient downforce in high-speed corners. Upgrade Aero to increase cornering grip.',
+    brakes: '📉 Braking efficiency is low; losing significant time into heavy stops. Upgrade Brakes before next race.',
+    suspension: '📉 Low kerb compliance and dampening; losing stability over kerbs. Upgrade Suspension.',
+    chassis: '📉 Chassis responsiveness is sluggish when changing lines to overtake. Upgrade Chassis.',
   };
 
   return {
@@ -267,29 +267,29 @@ export interface StageObjective {
 export const ALL_STAGE_OBJECTIVES: StageObjective[] = [
   {
     type: 'overtake_3',
-    titleTh: 'แซงให้ได้ 3 คัน',
-    descTh: 'แซงคู่แข่งขึ้นหน้าอย่างน้อย 3 คันระหว่างการแข่งขัน',
+    titleTh: 'Complete 3 Overtakes',
+    descTh: 'Overtake at least 3 rival cars during the race',
     icon: '⚡',
     rewardMoney: 600_000,
   },
   {
     type: 'clean_race',
-    titleTh: 'ไม่ชนเลย (Clean Race)',
-    descTh: 'แข่งจบโดยไม่ชนสิ่งกีดขวางหรือหลุดแทร็กแม้แต่ครั้งเดียว',
+    titleTh: 'Clean Race',
+    descTh: 'Finish the race with zero collisions or off-track excursions',
     icon: '🛡️',
     rewardMoney: 800_000,
   },
   {
     type: 'pit_within_time',
-    titleTh: 'เข้าพิทตามเป้าหมาย',
-    descTh: 'เข้าพิทและทำเวลา Pit Stop ได้รวดเร็วไม่เกิน 2.8 วินาที',
+    titleTh: 'Sub-2.8s Pit Stop',
+    descTh: 'Execute a lightning pit stop under 2.8 seconds',
     icon: '🔧',
     rewardMoney: 500_000,
   },
   {
     type: 'top_5_finish',
-    titleTh: 'จบอันดับ 5 อันดับแรก',
-    descTh: 'ขับเข้าเส้นชัยในอันดับ 1 ถึง 5 (P1 - P5)',
+    titleTh: 'Top 5 Finish',
+    descTh: 'Cross the finish line in P1 through P5',
     icon: '🏆',
     rewardMoney: 750_000,
   },

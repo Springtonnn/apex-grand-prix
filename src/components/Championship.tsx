@@ -93,7 +93,7 @@ export const Championship: React.FC<ChampionshipProps> = ({
   const [isPlayingOutRun, setIsPlayingOutRun] = useState<boolean>(false);
   const [outRunMode, setOutRunMode] = useState<'grand-prix' | 'practice'>('grand-prix');
 
-  // Notify parent of active racing status so background is locked during races ("ระหว่างแข่งห้ามเปลี่ยน")
+  // Notify parent of active racing status so background is locked during races
   useEffect(() => {
     onRacingStateChangeRef.current?.(isPlayingOutRun, activeGp?.round);
   }, [isPlayingOutRun, activeGp?.round]);
@@ -270,6 +270,8 @@ export const Championship: React.FC<ChampionshipProps> = ({
     const ptsD1 = getPointsForPosition(posD1);
     const ptsD2 = getPointsForPosition(posD2);
 
+    const isFinalRound = roundToFinalize >= (teamState.totalRaces || 18) || roundToFinalize >= circuits.length;
+
     if (returnDirectlyToHub) {
       setRaceFinished(false);
       setIsPlayingOutRun(false);
@@ -285,11 +287,21 @@ export const Championship: React.FC<ChampionshipProps> = ({
         winnerTeam,
         winnerFlag,
       });
-      setTimeout(() => {
-        raceSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 60);
+
+      if (isFinalRound) {
+        sound.playTrophy();
+        setShowCelebrationCutscene(true);
+      } else {
+        setTimeout(() => {
+          raceSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 60);
+      }
     } else {
       setRaceFinished(true);
+      if (isFinalRound) {
+        sound.playTrophy();
+        setShowCelebrationCutscene(true);
+      }
     }
 
     onUpdateTeamState((prev) => {
@@ -330,10 +342,17 @@ export const Championship: React.FC<ChampionshipProps> = ({
         })),
       };
 
-      const { updatedRecords, driverStandings, newTrophies } = recordCompletedRaceToSeason(
+      const { updatedRecords, driverStandings, newTrophies, isSeasonCompleted } = recordCompletedRaceToSeason(
         prev,
         raceLogEntry
       );
+
+      if (isSeasonCompleted) {
+        setTimeout(() => {
+          sound.playTrophy();
+          setShowCelebrationCutscene(true);
+        }, 200);
+      }
 
       const updatedCircuits = (prev.seasonCircuits || circuits).map((c) => {
         if (c.round === roundToFinalize) {
@@ -344,12 +363,22 @@ export const Championship: React.FC<ChampionshipProps> = ({
 
       const activeSec =
         updatedRecords.find(
-          (r) => r.seasonNumber === (prev.currentSeasonNumber || 1) && !r.isCompleted
-        ) || updatedRecords.find((r) => r.status === 'in-progress');
+          (r) => r.seasonNumber === (prev.currentSeasonNumber || 1)
+        ) || updatedRecords[0];
       const finalizedCount = activeSec?.raceLogs?.length || 0;
-      const nextRound = Math.min(prev.totalRaces, finalizedCount + 1);
+      const isSeasonDone = isSeasonCompleted || roundToFinalize >= (prev.totalRaces || 18);
+      const nextRound = isSeasonDone
+        ? (prev.totalRaces || 18)
+        : Math.min(prev.totalRaces || 18, finalizedCount + 1);
 
-      // Track 12th place (P12) finishes ("หรือได้อันดับที่ 12 3 ครั้ง")
+      if (isSeasonDone) {
+        setTimeout(() => {
+          sound.playTrophy();
+          setShowCelebrationCutscene(true);
+        }, 150);
+      }
+
+      // Track 12th place (P12) finishes
       const isP12 = posD1 === 12;
       const nextP12Count = isP12
         ? (prev.totalP12FinishesCount || 0) + 1
@@ -371,7 +400,7 @@ export const Championship: React.FC<ChampionshipProps> = ({
     });
   };
 
-  // Handle Interactive OutRun 3D Race Completion ("ถ้าแพ้ ก็ให้ต้องแข่งด่านนั้นใหม่")
+  // Handle Interactive OutRun 3D Race Completion
   const handleInteractiveOutRunFinish = (result: {
     playerPosition: number;
     bestLapTimeMs: number;
@@ -402,8 +431,8 @@ export const Championship: React.FC<ChampionshipProps> = ({
       return;
     }
 
-    // If player suffered a DNF or defeat ("ถ้าแพ้ ก็ให้ต้องแข่งด่านนั้นใหม่"):
-    // Track car wreck count ("ทำรถพังเกิน 20 ครั้ง")
+    // If player suffered a DNF or defeat:
+    // Track car wreck count
     if (result.isDnf || result.isLoss) {
       sound.playCrashImpact();
       setFinancialReport(null);
@@ -424,7 +453,7 @@ export const Championship: React.FC<ChampionshipProps> = ({
         setDnfRetryNotice({
           round: activeGp.round,
           gpName: activeGp.name,
-          reason: `รถพังไฟไหม้และหยุดทำงาน (ENGINE FIRE DNF) • สถิติรถพังสะสม ${nextCrashes}/20 ครั้ง • คุณต้องแข่งสนามนี้ใหม่เพื่อผ่านไปยังรอบถัดไป`,
+          reason: `Engine fire wreck (ENGINE FIRE DNF) • Crash count: ${nextCrashes}/20 • You must restart and complete this Grand Prix to advance!`,
         });
         setTimeout(() => {
           raceSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -442,7 +471,7 @@ export const Championship: React.FC<ChampionshipProps> = ({
 
     let finalGrid: SimDriverState[] = [];
 
-    // Use Claim modal's standings as canonical source ("ให้ใช้ของ claim เป็นหลัก")
+    // Use Claim modal's standings as canonical source
     if (result.standings && result.standings.length > 0) {
       const claimDrivers: SimDriverState[] = result.standings.map((s) => {
         if (s.isPlayer) {
@@ -634,7 +663,7 @@ export const Championship: React.FC<ChampionshipProps> = ({
                 }}
                 className="px-4 py-2 bg-slate-800/80 hover:bg-slate-700 text-slate-300 font-mono text-xs uppercase tracking-wider rounded-xl border border-slate-700 transition cursor-pointer backdrop-blur-xs"
               >
-                RETURN TO RACE HUB
+                RETURN TO CHAMPIONSHIP
               </button>
             </div>
 
@@ -700,24 +729,38 @@ export const Championship: React.FC<ChampionshipProps> = ({
                 STATEMENT
               </button>
               <button
-                onClick={() => setLastRaceCelebration(null)}
-                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-racing font-bold uppercase tracking-wider transition cursor-pointer shadow-md"
+                onClick={() => {
+                  if (teamState.currentRound >= teamState.totalRaces) {
+                    sound.playTrophy();
+                    setShowCelebrationCutscene(true);
+                  } else {
+                    setLastRaceCelebration(null);
+                  }
+                }}
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-racing font-bold uppercase tracking-wider transition cursor-pointer shadow-md flex items-center gap-1.5"
               >
-                CONTINUE TO ROUND {teamState.currentRound} ✓
+                {teamState.currentRound >= teamState.totalRaces ? (
+                  <>
+                    <Trophy className="w-3.5 h-3.5 text-amber-300" />
+                    <span>CHAMPIONSHIP CEREMONY 🏆</span>
+                  </>
+                ) : (
+                  <span>CONTINUE TO ROUND {teamState.currentRound} ✓</span>
+                )}
               </button>
             </div>
           </div>
         </div>
       )}
 
-        {/* DNF Defeat Notice Banner ("ถ้าแพ้ ก็ให้ต้องแข่งด่านนั้นใหม่") */}
+        {/* DNF Defeat Notice Banner */}
         {!isPlayingOutRun && dnfRetryNotice && (
           <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-red-950 via-[#1c0d12] to-red-950 border-2 border-red-500 shadow-2xl shadow-red-950/80 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 animate-in fade-in">
             <div className="flex items-center gap-3">
               <span className="text-3xl animate-bounce">🔥</span>
               <div>
                 <h4 className="text-sm sm:text-base font-racing font-black text-red-300 uppercase tracking-wide flex items-center gap-2">
-                  <span>การแข่งขันล้มเหลว (DNF) • ต้องแข่งสนามนี้ใหม่</span>
+                  <span>RACE RETIREMENT (DNF) • RESTART REQUIRED</span>
                   <span className="text-[10px] font-mono bg-red-600 text-white px-2 py-0.5 rounded font-bold">
                     RETRY REQUIRED
                   </span>
@@ -738,7 +781,7 @@ export const Championship: React.FC<ChampionshipProps> = ({
               className="px-5 py-2.5 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-racing font-black text-xs uppercase tracking-wider rounded-xl transition cursor-pointer shadow-lg shadow-red-950 shrink-0 flex items-center justify-center gap-2 border border-red-400"
             >
               <RotateCcw className="w-4 h-4 text-white" />
-              <span>แข่งสนามนี้ใหม่ (RETRY) →</span>
+              <span>RETRY GRAND PRIX →</span>
             </button>
           </div>
         )}
@@ -830,7 +873,7 @@ export const Championship: React.FC<ChampionshipProps> = ({
                 </h3>
 
                 <p className="text-xs sm:text-sm text-slate-300 font-mono leading-relaxed">
-                  ควบคุมพวงมาลัยด้วยตัวคุณเอง สู้กับแรงเหวี่ยงหนีศูนย์กลางในโค้ง เปิดระบบ DRS Boost บนทางตรง และสู้เพื่อตำแหน่ง P1 บนสนามแข่ง! จำนวนรอบแข่งจะเพิ่มขึ้นอัตโนมัติเมื่อเข้าสู่ช่วงท้ายของฤดูกาล (จำกัดสูงสุด 5 รอบ)
+                  Take manual control behind the wheel, battle centrifugal G-forces in the turns, deploy DRS boost on the straights, and fight for P1 on track! Total race laps scale dynamically up to 5 laps in championship finale stages.
                 </p>
 
                 <div className="flex flex-wrap items-center gap-3 pt-1 text-xs font-mono text-slate-300">
@@ -869,7 +912,7 @@ export const Championship: React.FC<ChampionshipProps> = ({
                 <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
                   <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-amber-400 uppercase">
                     <Trophy className="w-3.5 h-3.5 text-amber-400" />
-                    <span>PODIUM PRIZES (รางวัลที่ 1 - 3)</span>
+                    <span>PODIUM PRIZES (P1 - P3)</span>
                   </div>
                   <span className="text-[10px] font-mono text-slate-500 uppercase">OFFICIAL</span>
                 </div>
@@ -975,7 +1018,7 @@ export const Championship: React.FC<ChampionshipProps> = ({
                     RACE COMPLETE • FINANCIAL & POINTS REPORT
                   </h3>
                   <p className="text-xs text-slate-400">
-                    เงินรางวัลเข้าบัญชีสโมสรเรียบร้อยหลังหักค่าเหนื่อยนักแข่งและทีมงาน
+                    Prize purse deposited into team account after deducting driver and crew salaries.
                   </p>
                 </div>
               </div>

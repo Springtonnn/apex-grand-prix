@@ -121,7 +121,7 @@ export const Navigation: React.FC<NavigationProps> = ({
                 sound.playClick();
                 onChangeView('help-tutorial');
               }}
-              title="Help Tutorial & Game Guide (วิธีเล่นและคู่มือ)"
+              title="Help Tutorial & Game Guide"
               aria-label="Help Tutorial and Game Guide"
               className={`p-2 rounded-lg transition cursor-pointer group flex items-center justify-center ${
                 currentView === 'help-tutorial'

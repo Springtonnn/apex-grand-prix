@@ -1003,7 +1003,7 @@ export const TeamCelebrationGraphic: React.FC<TeamCelebrationGraphicProps> = ({
         </g>
 
         {/* =================================================================== */}
-        {/* 5. "และมีถ้วยจากแต่ละสนามอยู่บนพื้น"                                */}
+        {/* 5. "Trophies from each circuit on the floor"                                */}
         {/*    REALISTIC 3D CHALICE TROPHIES FOR ALL CIRCUITS ON THE GROUND     */}
         {/* =================================================================== */}
         <g id="floor-trophies-row" transform="translate(0, 560)">

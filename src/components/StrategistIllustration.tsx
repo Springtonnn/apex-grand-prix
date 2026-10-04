@@ -89,27 +89,27 @@ export const PitWallStrategistIllustrationSVG: React.FC<{ className?: string }> 
 
 export const STRATEGIST_IMPROVEMENTS = [
   {
-    title: 'แซงในพิท (Undercut)',
-    description: 'คำนวณรอบสลับยางใหม่ แซงคู่แข่งโดยไม่ต้องเสี่ยงชน',
-    impact: 'โอกาสแซงในพิทสูงขึ้น',
+    title: 'Pit Undercut Mastery',
+    description: 'Optimizes fresh tire pit window to leapfrog rivals without crash risk',
+    impact: 'High Undercut Success',
     icon: '📊',
   },
   {
-    title: 'พิทฟรีตอน Safety Car',
-    description: 'สั่งเข้าพิททันทีที่ธงเหลืองขึ้น เสียเวลาน้อยกว่าปกติ',
-    impact: 'กระโดดแซงหลายอันดับ',
+    title: 'Safety Car Free Pit',
+    description: 'Pits immediately under full-course cautions with minimal track time lost',
+    impact: 'Gain Multiple Positions',
     icon: '🚨',
   },
   {
-    title: 'เรดาร์ฝนตกแม่นยำ',
-    description: 'เตือนฝนตกล่วงหน้า สั่งใส่ยางฝนได้ถูกจังหวะ',
-    impact: 'ไม่เสียเวลาบนแทร็กเปียก',
+    title: 'Doppler Rain Radar',
+    description: 'Early weather alerts and precise timing to switch to intermediate/wet tires',
+    impact: 'No Wet Track Time Loss',
     icon: '🌧️',
   },
   {
-    title: 'ตัดสินใจไม่ผิดพลาด',
-    description: 'เลือกยางและวางแผนรอบเข้าพิทอย่างแม่นยำ',
-    impact: 'แผนการแข่งรัดกุม',
+    title: 'Flawless Race Strategy',
+    description: 'Selects optimal tire compounds and pit stop laps with championship precision',
+    impact: 'Bulletproof Race Plan',
     icon: '🧠',
   },
 ];

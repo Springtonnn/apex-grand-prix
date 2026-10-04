@@ -263,7 +263,7 @@ export const VictoryCelebrationCutscene: React.FC<VictoryCelebrationCutsceneProp
                 type="button"
                 onClick={handleSkipIntro}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/40 text-xs font-mono transition cursor-pointer"
-                title="ข้ามอินโทร (Skip intro to celebration)"
+                title="Skip intro to celebration"
               >
                 <FastForward className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">SKIP INTRO</span>
@@ -275,7 +275,7 @@ export const VictoryCelebrationCutscene: React.FC<VictoryCelebrationCutsceneProp
               type="button"
               onClick={handleReplay}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-mono transition cursor-pointer"
-              title="เล่นคัตซีนใหม่อีกครั้ง (Replay celebration)"
+              title="Replay celebration"
             >
               <RotateCcw className="w-3.5 h-3.5 text-amber-400" />
               <span className="hidden md:inline">REPLAY</span>
@@ -287,7 +287,7 @@ export const VictoryCelebrationCutscene: React.FC<VictoryCelebrationCutsceneProp
                 type="button"
                 onClick={onToggleMute}
                 className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition cursor-pointer"
-                title="เปิด/ปิดเสียง (Mute/Unmute audio)"
+                title="Mute/Unmute audio"
               >
                 {isMuted ? <VolumeX className="w-4 h-4 text-red-400" /> : <Volume2 className="w-4 h-4 text-emerald-400" />}
               </button>
@@ -298,7 +298,7 @@ export const VictoryCelebrationCutscene: React.FC<VictoryCelebrationCutsceneProp
               type="button"
               onClick={onClose}
               className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-racing font-bold text-xs uppercase tracking-wider shadow-md transition cursor-pointer"
-              title="ปิดคัตซีนกลับสู่เมนูหลัก (Exit to Main Menu)"
+              title="Exit to Main Menu"
             >
               <X className="w-4 h-4" />
               <span>EXIT</span>

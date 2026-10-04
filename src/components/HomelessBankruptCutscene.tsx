@@ -61,11 +61,11 @@ export const HomelessBankruptCutscene: React.FC<HomelessBankruptCutsceneProps> =
           <div className="absolute bottom-4 left-4 right-4 sm:bottom-6 sm:left-6 sm:right-6 bg-black/85 backdrop-blur-md p-3.5 sm:p-4 rounded-2xl border border-red-500/50 shadow-2xl">
             <div className="flex items-center gap-2 text-xs font-mono font-bold text-red-400 uppercase tracking-wider mb-1">
               <HeartCrack className="w-4 h-4 text-red-500 animate-pulse" />
-              <span>FALL FROM GRACE • จากจุดสูงสุดสู่คนไร้บ้าน</span>
+              <span>FALL FROM GRACE • FROM PADDOCK TO STREETS</span>
             </div>
             <p className="text-xs sm:text-sm text-slate-200 font-thai leading-relaxed">
-              &quot;จากผู้จัดการทีม F1 ที่เคยยืนสั่งการอยู่ในพิทเลนระดับโลก... วันนี้ทุกอย่างสูญสิ้น
-              เหลือเพียงม้านั่งไม้ตัวเก่าในสวนสาธารณะ กับกระเป๋าผ้าใส่ของใช้ส่วนตัวใบสุดท้าย&quot;
+              &quot;From a world-class F1 team principal barking orders in the pit lane... to losing everything.
+              Now left with only an old wooden park bench and a duffel bag of personal belongings.&quot;
             </p>
           </div>
         </div>
@@ -83,7 +83,7 @@ export const HomelessBankruptCutscene: React.FC<HomelessBankruptCutsceneProps> =
               </span>
               <div>
                 <span className="text-[10px] font-mono uppercase tracking-widest text-red-400 font-bold block">
-                  CAREER TERMINATED • โดนปลดถาวร
+                  CAREER TERMINATED • CONTRACT REVOKED
                 </span>
                 <h2 className="text-xl sm:text-2xl font-black font-racing uppercase tracking-wide text-white">
                   BANKRUPTCY & RUIN
@@ -97,19 +97,19 @@ export const HomelessBankruptCutscene: React.FC<HomelessBankruptCutsceneProps> =
                 {isCrashesReason ? (
                   <>
                     <Flame className="w-4 h-4 text-orange-400 animate-bounce" />
-                    <span>สาเหตุ: ทำรถแข่งพังเกินโควตา 20 ครั้ง</span>
+                    <span>CAUSE: WRECKED CAR OVER 20 TIMES</span>
                   </>
                 ) : (
                   <>
                     <TrendingDown className="w-4 h-4 text-red-400 animate-bounce" />
-                    <span>สาเหตุ: จบอันดับ 12 (บ๊วย) ครบ 3 ครั้ง</span>
+                    <span>CAUSE: FINISHED P12 (DEAD LAST) 3 TIMES</span>
                   </>
                 )}
               </div>
               <p className="text-xs text-slate-200 font-thai leading-snug">
                 {isCrashesReason
-                  ? `คุณทำรถแข่งชนพังยับเยินสะสมไปถึง ${crashesCount} ครั้ง ค่าซ่อมบานปลายจนทีมล้มละลาย โดน FIA และเจ้าหนี้ยึดโรงงานและรถแข่งทั้งหมด กลายเป็นคนไร้บ้านสิ้นเนื้อประดาตัว!`
-                  : `คุณพาทีมเข้าเส้นชัยอันดับที่ 12 (บ๊วยสุดของกริด) ครบ ${p12Count} ครั้ง สปอนเซอร์ทุกรายฉีกสัญญาทิ้งทันที บอร์ดบริหารขับไล่ออกและฟ้องล้มละลายจนหมดตัว!`
+                  ? `You crashed the race cars ${crashesCount} times! Astronomical repair bills bankrupted the team, causing the FIA and creditors to seize the factory and all assets, leaving you destitute on the streets!`
+                  : `You finished in 12th place (dead last) ${p12Count} times! All sponsors immediately ripped up their contracts, and the board ousted you into bankruptcy!`
                 }
               </p>
             </div>
@@ -123,32 +123,32 @@ export const HomelessBankruptCutscene: React.FC<HomelessBankruptCutsceneProps> =
             </div>
 
             <div className="flex items-center justify-between text-slate-300">
-              <span className="text-slate-400">อดีตทีมที่ล้มละลาย:</span>
+              <span className="text-slate-400">Bankrupted Team:</span>
               <strong className="text-white truncate max-w-[150px]">{teamState.teamName}</strong>
             </div>
 
             <div className="flex items-center justify-between text-slate-300">
-              <span className="text-slate-400">สถิติรถพังสะสม:</span>
+              <span className="text-slate-400">Total Crashes:</span>
               <strong className={crashesCount >= 20 ? 'text-red-400 font-bold' : 'text-amber-400'}>
-                {crashesCount} / 20 ครั้ง {crashesCount >= 20 ? '🔥 (เกินโควตา)' : ''}
+                {crashesCount} / 20 crashes {crashesCount >= 20 ? '🔥 (LIMIT EXCEEDED)' : ''}
               </strong>
             </div>
 
             <div className="flex items-center justify-between text-slate-300">
-              <span className="text-slate-400">อันดับที่ 12 (บ๊วย):</span>
+              <span className="text-slate-400">P12 Finishes (Dead Last):</span>
               <strong className={p12Count >= 3 ? 'text-red-400 font-bold' : 'text-amber-400'}>
-                {p12Count} / 3 ครั้ง {p12Count >= 3 ? '📉 (โดนฉีกสัญญา)' : ''}
+                {p12Count} / 3 finishes {p12Count >= 3 ? '📉 (CONTRACT TERMINATED)' : ''}
               </strong>
             </div>
 
             <div className="flex items-center justify-between text-slate-300">
-              <span className="text-slate-400">เงินในบัญชีคงเหลือ:</span>
-              <strong className="text-red-400 font-bold">0 ฿ (หนี้สินท่วมตัว)</strong>
+              <span className="text-slate-400">Remaining Balance:</span>
+              <strong className="text-red-400 font-bold">$0 (Insurmountable Debt)</strong>
             </div>
 
             <div className="flex items-center justify-between text-slate-300 pt-1 border-t border-slate-800/60">
-              <span className="text-slate-400">ที่พักอาศัยปัจจุบัน:</span>
-              <span className="text-amber-300 font-thai text-[11px]">ม้านั่งในสวนสาธารณะ</span>
+              <span className="text-slate-400">Current Residence:</span>
+              <span className="text-amber-300 font-mono text-[11px]">Park Bench</span>
             </div>
           </div>
 
@@ -162,7 +162,7 @@ export const HomelessBankruptCutscene: React.FC<HomelessBankruptCutsceneProps> =
               className="w-full py-3.5 px-4 bg-gradient-to-r from-red-600 via-rose-600 to-red-600 hover:from-red-500 hover:to-rose-500 text-white font-racing font-black text-sm uppercase tracking-wider rounded-2xl shadow-xl shadow-red-950/80 flex items-center justify-center gap-2.5 cursor-pointer transition active:scale-95 border-2 border-red-400/80 animate-pulse"
             >
               <RotateCcw className="w-5 h-5 text-white" />
-              <span>เริ่มเกมใหม่ทั้งหมด (START NEW GAME) →</span>
+              <span>START NEW CAREER →</span>
             </button>
 
             {onSimulateDismiss && (
@@ -170,7 +170,7 @@ export const HomelessBankruptCutscene: React.FC<HomelessBankruptCutsceneProps> =
                 onClick={onSimulateDismiss}
                 className="w-full py-2 text-slate-400 hover:text-slate-200 text-xs font-mono transition text-center underline cursor-pointer"
               >
-                [Dev/Test: ปิดหน้าต่างนี้ชั่วคราวเพื่อดูหน้าจออื่น]
+                [Dev/Test: Temporarily dismiss dialog]
               </button>
             )}
           </div>

@@ -144,7 +144,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
       ...prev,
       availableDrivers: prev.availableDrivers.map(() => generateRandomMarketDriver()),
     }));
-    showNotice('รีเฟรชตลาดนักแข่งเรียบร้อย');
+    showNotice('Driver transfer market refreshed');
   };
 
   const handleRefreshStrategist = (stratId: string) => {
@@ -181,7 +181,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
     const cost = targetDriver.buyoutCost || 0;
     if (teamState.budget < cost) {
       sound.playClick();
-      showNotice(`งบประมาณไม่พอ (ต้องการ ${formatMoney(cost)})`, 'error');
+      showNotice(`Insufficient budget (Requires ${formatMoney(cost)})`, 'error');
       return;
     }
 
@@ -202,7 +202,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
       };
     });
 
-    showNotice(`เซ็นสัญญา ${targetDriver.name} เข้ารถคันที่ ${seat === 'driver1' ? '1' : '2'} สำเร็จ!`);
+    showNotice(`Successfully signed ${targetDriver.name} to Seat ${seat === 'driver1' ? '1' : '2'}!`);
   };
 
   // ----------------------------------------------------
@@ -211,7 +211,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
   const handleHireStrategist = (newStrategist: Strategist) => {
     if (teamState.budget < newStrategist.hireCost) {
       sound.playClick();
-      showNotice(`งบประมาณไม่พอ (ต้องการ ${formatMoney(newStrategist.hireCost)})`, 'error');
+      showNotice(`Insufficient budget (Requires ${formatMoney(newStrategist.hireCost)})`, 'error');
       return;
     }
 
@@ -232,7 +232,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
       };
     });
 
-    showNotice(`แต่งตั้ง ${newStrategist.name} เป็นโค้ดกลยุทธ์แล้ว!`);
+    showNotice(`Appointed ${newStrategist.name} as Lead Strategist!`);
   };
 
   // ----------------------------------------------------
@@ -241,7 +241,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
   const handleHirePitCrew = (newCrew: PitCrew) => {
     if (teamState.budget < newCrew.hireCost) {
       sound.playClick();
-      showNotice(`งบประมาณไม่พอ (ต้องการ ${formatMoney(newCrew.hireCost)})`, 'error');
+      showNotice(`Insufficient budget (Requires ${formatMoney(newCrew.hireCost)})`, 'error');
       return;
     }
 
@@ -262,7 +262,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
       };
     });
 
-    showNotice(`ว่าจ้างทีมพิทครูว์ ${newCrew.name} สำเร็จ!`);
+    showNotice(`Successfully hired pit crew: ${newCrew.name}!`);
   };
 
   // ----------------------------------------------------
@@ -270,12 +270,12 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
   // ----------------------------------------------------
   const handleHireScout = (scoutCandidate: Scout) => {
     if (teamState.scouts.length >= teamState.maxScouts) {
-      showNotice(`ทีมแมวมองเต็มแล้ว (${teamState.maxScouts}/${teamState.maxScouts} คน)`, 'error');
+      showNotice(`Scout roster full (${teamState.maxScouts}/${teamState.maxScouts})`, 'error');
       return;
     }
     if (teamState.budget < scoutCandidate.hireCost) {
       sound.playClick();
-      showNotice(`งบประมาณไม่พอ (${formatMoney(scoutCandidate.hireCost)})`, 'error');
+      showNotice(`Insufficient budget (${formatMoney(scoutCandidate.hireCost)})`, 'error');
       return;
     }
 
@@ -293,7 +293,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
       };
     });
 
-    showNotice(`จ้างแมวมอง ${scoutCandidate.name} สำเร็จ!`);
+    showNotice(`Successfully hired scout ${scoutCandidate.name}!`);
     setOpenNetworkOpen(false);
   };
 
@@ -303,14 +303,14 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
   const handleUpgradeCarStat = (statKey: CarStatKey) => {
     const currentVal = teamState.car[statKey];
     if (currentVal >= MAX_STAT_CAP) {
-      showNotice(`${statKey.toUpperCase()} อัพเกรดเต็มแล้ว (99 OVR)!`, 'error');
+      showNotice(`${statKey.toUpperCase()} already at maximum level (99 OVR)!`, 'error');
       return;
     }
 
     const cost = getCarUpgradeCost(currentVal);
     if (teamState.budget < cost) {
       sound.playClick();
-      showNotice(`งบประมาณไม่พออัพเกรด (ต้องการ ${formatMoney(cost)})`, 'error');
+      showNotice(`Insufficient funds for upgrade (Requires ${formatMoney(cost)})`, 'error');
       return;
     }
 
@@ -328,7 +328,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
     });
 
     const spec = CAR_COMPONENT_SPECS[statKey];
-    showNotice(`อัพเกรด ${spec.thaiName} เป็นเลเวล ${currentVal + 1}!`);
+    showNotice(`Upgraded ${spec.name} to Level ${currentVal + 1}!`);
   };
 
   // ----------------------------------------------------
@@ -382,7 +382,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
       };
     });
 
-    showNotice(`เลื่อนขั้น ${promoteCandidate.name} เข้ารถคันที่ ${seat === 'driver1' ? '1' : '2'} สำเร็จ!`);
+    showNotice(`Promoted ${promoteCandidate.name} to Seat ${seat === 'driver1' ? '1' : '2'}!`);
     setPromoteCandidate(null);
   };
 
@@ -396,7 +396,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
 
     if (teamState.budget < scanCost) {
       sound.playClick();
-      showNotice(`งบประมาณไม่พอส่งแมวมอง (${formatMoney(scanCost)})`, 'error');
+      showNotice(`Insufficient budget to deploy scout (${formatMoney(scanCost)})`, 'error');
       return;
     }
 
@@ -418,7 +418,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
       };
     });
 
-    showNotice(`พบดาวรุ่งใหม่ใน ${continent}: ${newProspect.name} (${newProspect.overall} OVR)!`);
+    showNotice(`Discovered new talent in ${continent}: ${newProspect.name} (${newProspect.overall} OVR)!`);
   };
 
   const carOverall = calculateCarOverall(teamState.car);
@@ -477,14 +477,14 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
           <div>
             <h2 className="font-racing font-bold text-lg text-white uppercase tracking-wider flex items-center gap-2">
               <span>TEAM MANAGEMENT</span>
-              <span className="text-xs font-mono font-normal text-slate-400">/ จัดการทีมและพัฒนาตัวรถ</span>
+              <span className="text-xs font-mono font-normal text-slate-400">/ Team HQ & Car Development</span>
             </h2>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
           <div className="px-3.5 py-1.5 rounded-xl bg-[#141d2a]/65 backdrop-blur-xs border border-slate-700/60 text-xs font-mono flex items-center gap-2">
-            <span className="text-slate-400">งบประมาณ:</span>
+            <span className="text-slate-400">Budget:</span>
             <span className="text-emerald-400 font-bold text-sm">{formatMoney(teamState.budget)}</span>
           </div>
 
@@ -497,7 +497,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#17202d]/70 hover:bg-[#1e2a3c] border border-amber-500/40 hover:border-amber-400 text-amber-300 hover:text-white font-racing text-xs tracking-wider uppercase transition shadow cursor-pointer active:scale-95 backdrop-blur-xs"
             >
               <Save className="w-4 h-4 text-amber-400" />
-              <span>เซฟเกม (SAVES)</span>
+              <span>SAVE SLOTS</span>
             </button>
           )}
         </div>
@@ -533,7 +533,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
               <span className="text-xs font-normal text-slate-400 font-sans">({currentCircuitDemands.country})</span>
             </h3>
             <p className="text-xs text-slate-300 font-mono mt-0.5">
-              ความเร็วคู่แข่งประจำสนาม: <span className="text-amber-400 font-bold">{currentCircuitDemands.rivalSpeedRange}</span> • เกณฑ์คู่แข่ง: <span className="text-white font-bold">{currentCircuitDemands.rivalBenchmarkOvr} OVR</span>
+              Rival Speed Benchmark: <span className="text-amber-400 font-bold">{currentCircuitDemands.rivalSpeedRange}</span> • Rival Benchmark: <span className="text-white font-bold">{currentCircuitDemands.rivalBenchmarkOvr} OVR</span>
             </p>
           </div>
         </div>
@@ -548,7 +548,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
               <span>{preparedness.title}</span>
             </div>
             <div className="text-[11px] text-slate-400 mt-1 font-mono">
-              รถของคุณ: <span className="text-white font-bold">{carOverall} OVR</span> ({estimatedTopSpeed} กม./ชม.)
+              Your Car: <span className="text-white font-bold">{carOverall} OVR</span> ({estimatedTopSpeed} km/h)
             </div>
           </div>
 
@@ -560,7 +560,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
             }}
             className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white font-racing text-xs font-bold uppercase tracking-wider transition shadow-lg shadow-red-950/60 flex items-center gap-1 cursor-pointer"
           >
-            <span>วิเคราะห์ & อัพเกรด</span>
+            <span>Analysis & Upgrades</span>
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
@@ -570,11 +570,11 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
       <div className="bg-[#101520]/60 backdrop-blur-md p-2 rounded-2xl border border-slate-800/60 shadow-xl">
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
           {[
-            { id: 'drivers', emoji: '🏎️', label: 'นักแข่ง', sub: 'ที่นั่ง & ตลาดซื้อขาย', accent: 'from-blue-600 to-blue-800' },
-            { id: 'strategist', emoji: '🧠', label: 'โค้ดกลยุทธ์', sub: 'วางแผนรอบเข้าพิท', accent: 'from-purple-600 to-purple-800' },
-            { id: 'pitcrew', emoji: '⏱️', label: 'พิทครูว์', sub: 'ลูกศรมินิเกมน้อยลง', accent: 'from-amber-600 to-amber-800' },
-            { id: 'car', emoji: '⚡', label: 'อัพเกรดรถ', sub: 'เครื่องยนต์ & แอร์โร', accent: 'from-red-600 to-red-800' },
-            { id: 'academy', emoji: '🌟', label: 'อะคาเดมี่', sub: 'แมวมอง & ดาวรุ่ง', accent: 'from-emerald-600 to-emerald-800' },
+            { id: 'drivers', emoji: '🏎️', label: 'Drivers', sub: 'Roster & Market', accent: 'from-blue-600 to-blue-800' },
+            { id: 'strategist', emoji: '🧠', label: 'Strategist', sub: 'Pit Strategy & Pace', accent: 'from-purple-600 to-purple-800' },
+            { id: 'pitcrew', emoji: '⏱️', label: 'Pit Crew', sub: 'Pit Stop Arrows', accent: 'from-amber-600 to-amber-800' },
+            { id: 'car', emoji: '⚡', label: 'Car R&D', sub: 'Engine & Aero', accent: 'from-red-600 to-red-800' },
+            { id: 'academy', emoji: '🌟', label: 'Academy', sub: 'Scouts & Young Talent', accent: 'from-emerald-600 to-emerald-800' },
           ].map((tab) => {
             const isActive = activeTab === tab.id;
             return (
@@ -611,7 +611,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
               <Sparkles className="w-4 h-4" />
             </div>
             <div className="text-xs text-slate-300 font-mono">
-              <span className="text-blue-400 font-bold">บทบาทในสนามแข่ง:</span> ค่า <span className="text-white font-bold">Pace</span> ช่วยดึงความเร็วสูงสุดและอัตราเร่งของตัวรถออกมาได้เต็มที่ และ <span className="text-white font-bold">RaceCraft</span> ช่วยให้ออกสตาร์ตได้เร็ว ป้องกันไลน์ และหาจังหวะแซงคู่แข่งในโค้งแคบ
+              <span className="text-blue-400 font-bold">Race Day Impact:</span> Driver <span className="text-white font-bold">Pace</span> maximizes vehicle top speed and acceleration, while <span className="text-white font-bold">Racecraft</span> powers aggressive race starts, defensive positioning, and sharp overtakes through corners.
             </div>
           </div>
 
@@ -629,7 +629,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
                     : 'bg-[#151c28]/80 text-slate-400 hover:text-white border border-slate-800 backdrop-blur-sm'
                 }`}
               >
-                <span>🏎️ นักแข่งประจำทีม (2 คน)</span>
+                <span>🏎️ Active Race Drivers (2 Seats)</span>
               </button>
               <button
                 onClick={() => {
@@ -642,7 +642,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
                     : 'bg-[#151c28]/80 text-slate-400 hover:text-white border border-slate-800 backdrop-blur-sm'
                 }`}
               >
-                <span>🌐 ตลาดนักแข่ง ({teamState.availableDrivers.length} คน)</span>
+                <span>🌐 Driver Transfer Market ({teamState.availableDrivers.length} Available)</span>
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               </button>
             </div>
@@ -653,7 +653,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
                 className="px-3 py-1.5 rounded-lg bg-[#182232]/80 hover:bg-[#202d42] border border-blue-500/40 text-blue-300 font-racing text-xs uppercase flex items-center gap-1.5 transition cursor-pointer backdrop-blur-sm"
               >
                 <RotateCw className="w-3.5 h-3.5" />
-                <span>รีเฟรชตลาดใหม่</span>
+                <span>Refresh Market</span>
               </button>
             )}
           </div>
@@ -662,8 +662,8 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
           {driverSubTab === 'current' ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               {[
-                { label: 'ที่นั่งคันที่ 1 (DRIVER 1)', driver: teamState.driver1, seat: 'driver1' as const },
-                { label: 'ที่นั่งคันที่ 2 (DRIVER 2)', driver: teamState.driver2, seat: 'driver2' as const },
+                { label: 'SEAT 1 (DRIVER 1)', driver: teamState.driver1, seat: 'driver1' as const },
+                { label: 'SEAT 2 (DRIVER 2)', driver: teamState.driver2, seat: 'driver2' as const },
               ].map(({ label, driver, seat }) => (
                 <div
                   key={seat}
@@ -690,7 +690,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
                           <span>{driver.name}</span>
                         </h3>
                         <p className="text-xs text-slate-400 font-mono mt-0.5">
-                          อายุ {driver.age} • {driver.nationality.name}
+                          Age {driver.age} • {driver.nationality.name}
                         </p>
                       </div>
                     </div>
@@ -706,22 +706,22 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
                   {/* 3 Core Stats: Short & Clear */}
                   <div className="grid grid-cols-3 gap-2 my-3 font-mono text-center">
                     <div className="bg-[#070b10]/45 backdrop-blur-xs p-2.5 rounded-xl border border-slate-800/60">
-                      <div className="text-[10px] text-slate-400">⚡ ความเร็ว</div>
+                      <div className="text-[10px] text-slate-400">⚡ Pace</div>
                       <div className="text-base font-bold text-red-400">{Math.min(MAX_STAT_CAP, driver.pace)}</div>
                     </div>
                     <div className="bg-[#070b10]/45 backdrop-blur-xs p-2.5 rounded-xl border border-slate-800/60">
-                      <div className="text-[10px] text-slate-400">⚔️ การแซง</div>
+                      <div className="text-[10px] text-slate-400">⚔️ Racecraft</div>
                       <div className="text-base font-bold text-blue-400">{Math.min(MAX_STAT_CAP, driver.raceCraft)}</div>
                     </div>
                     <div className="bg-[#070b10]/45 backdrop-blur-xs p-2.5 rounded-xl border border-slate-800/60">
-                      <div className="text-[10px] text-slate-400">🎓 คุมยาง</div>
+                      <div className="text-[10px] text-slate-400">🎓 Experience</div>
                       <div className="text-base font-bold text-emerald-400">{Math.min(MAX_STAT_CAP, driver.experience)}</div>
                     </div>
                   </div>
 
                   {/* Financial info */}
                   <div className="pt-3 border-t border-slate-800 flex items-center justify-between text-xs font-mono">
-                    <span className="text-slate-400">💰 ค่าจ้างต่อเรซ:</span>
+                    <span className="text-slate-400">💰 Salary / Race:</span>
                     <span className="text-red-400 font-bold">{formatMoney(driver.salary)}</span>
                   </div>
                 </div>
@@ -763,7 +763,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
                             <span className="truncate">{driver.name}</span>
                           </h4>
                           <p className="text-xs text-slate-400 font-mono">
-                            อายุ {driver.age} • {driver.nationality.name}
+                            Age {driver.age} • {driver.nationality.name}
                           </p>
                         </div>
                       </div>
@@ -771,26 +771,26 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
                       {/* 3 Core Stats */}
                       <div className="grid grid-cols-3 gap-2 my-3 bg-[#0d1219] p-2 rounded-xl text-center font-mono">
                         <div>
-                          <div className="text-[10px] text-slate-400">⚡ ความเร็ว</div>
+                          <div className="text-[10px] text-slate-400">⚡ Pace</div>
                           <div className="text-sm font-bold text-red-400">{Math.min(MAX_STAT_CAP, driver.pace)}</div>
                         </div>
                         <div>
-                          <div className="text-[10px] text-slate-400">⚔️ การแซง</div>
+                          <div className="text-[10px] text-slate-400">⚔️ Racecraft</div>
                           <div className="text-sm font-bold text-blue-400">{Math.min(MAX_STAT_CAP, driver.raceCraft)}</div>
                         </div>
                         <div>
-                          <div className="text-[10px] text-slate-400">🎓 คุมยาง</div>
+                          <div className="text-[10px] text-slate-400">🎓 Experience</div>
                           <div className="text-sm font-bold text-emerald-400">{Math.min(MAX_STAT_CAP, driver.experience)}</div>
                         </div>
                       </div>
 
                       <div className="space-y-1 text-xs font-mono border-t border-slate-800 pt-2.5">
                         <div className="flex justify-between">
-                          <span className="text-slate-400">🏷️ ค่าฉีกสัญญา:</span>
+                          <span className="text-slate-400">🏷️ Buyout Fee:</span>
                           <span className="text-amber-300 font-bold">{formatMoney(driver.buyoutCost || 0)}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-slate-400">💰 ค่าจ้าง/เรซ:</span>
+                          <span className="text-slate-400">💰 Salary / Race:</span>
                           <span className="text-red-400">{formatMoney(driver.salary)}</span>
                         </div>
                       </div>
@@ -799,7 +799,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
                     <div className="mt-3.5 pt-2.5 border-t border-slate-800">
                       {!canAfford ? (
                         <div className="w-full py-2 bg-slate-800/60 text-slate-500 border border-slate-700/50 rounded-xl text-xs font-bold text-center">
-                          🔒 เงินไม่พอ (ขาด {formatMoney((driver.buyoutCost || 0) - teamState.budget)})
+                          🔒 Insufficient Funds (Short by {formatMoney((driver.buyoutCost || 0) - teamState.budget)})
                         </div>
                       ) : (
                         <div className="flex gap-2">
@@ -807,13 +807,13 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
                             onClick={() => handleSignDriver(driver, 'driver1')}
                             className="flex-1 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-racing font-bold tracking-wide transition cursor-pointer text-center active:scale-95"
                           >
-                            🏎️ ใส่ที่นั่ง 1
+                            🏎️ Sign to Seat 1
                           </button>
                           <button
                             onClick={() => handleSignDriver(driver, 'driver2')}
                             className="flex-1 py-2 bg-[#253346] hover:bg-[#2f4057] text-white rounded-xl text-xs font-racing font-bold tracking-wide transition cursor-pointer text-center active:scale-95"
                           >
-                            🏎️ ใส่ที่นั่ง 2
+                            🏎️ Sign to Seat 2
                           </button>
                         </div>
                       )}
@@ -837,7 +837,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
               <Zap className="w-4 h-4" />
             </div>
             <div className="text-xs text-slate-300 font-mono">
-              <span className="text-purple-400 font-bold">บทบาทในสนามแข่ง:</span> โค้ชกลยุทธ์ที่มีระดับ Overall สูงจะช่วยยืดระยะเวลาของสปีดบูสต์บน <span className="text-white font-bold">Booster Speed Pad (+0.040 วินาที/เลเวล)</span> ทำให้รถทะยานไปข้างหน้าได้ยาวนานขึ้นอย่างเด่นชัดในการฉีกหนีหรือไล่บี้คู่แข่ง
+              <span className="text-purple-400 font-bold">Race Day Impact:</span> A higher-rated Lead Strategist extends active boost duration on <span className="text-white font-bold">Booster Speed Pads (+0.040s / level)</span>, surging your vehicle forward longer to pull away or reel in rivals.
             </div>
           </div>
 
@@ -848,7 +848,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
               <div className="lg:col-span-7 space-y-3">
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-600/20 text-purple-300 border border-purple-500/30 text-xs font-mono font-bold">
                   <BrainCircuit className="w-3.5 h-3.5" />
-                  <span>โค้ดกลยุทธ์ประจำทีม (LEAD STRATEGIST)</span>
+                  <span>TEAM LEAD STRATEGIST</span>
                 </div>
 
                 <div className="flex items-center justify-between gap-4">
@@ -879,19 +879,19 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
                 {/* 3 Core Stats */}
                 <div className="grid grid-cols-3 gap-2 font-mono text-center">
                   <div className="bg-[#070b10]/45 backdrop-blur-xs p-2.5 rounded-xl border border-slate-800/60">
-                    <span className="text-[10px] text-slate-400 block">🧠 การตัดสินใจ</span>
+                    <span className="text-[10px] text-slate-400 block">🧠 Decision Making</span>
                     <span className="text-lg font-bold text-white">
                       {Math.min(MAX_STAT_CAP, teamState.strategist.decisions)} / 99
                     </span>
                   </div>
                   <div className="bg-[#070b10]/45 backdrop-blur-xs p-2.5 rounded-xl border border-slate-800/60">
-                    <span className="text-[10px] text-slate-400 block">📊 กลยุทธ์ยาง</span>
+                    <span className="text-[10px] text-slate-400 block">📊 Tire Strategy</span>
                     <span className="text-lg font-bold text-white">
                       {Math.min(MAX_STAT_CAP, teamState.strategist.strategy)} / 99
                     </span>
                   </div>
                   <div className="bg-[#070b10]/45 backdrop-blur-xs p-2.5 rounded-xl border border-slate-800/60">
-                    <span className="text-[10px] text-slate-400 block">💰 ค่าจ้าง/เรซ</span>
+                    <span className="text-[10px] text-slate-400 block">💰 Salary / Race</span>
                     <span className="text-lg font-bold text-red-400">
                       {formatMoney(teamState.strategist.salary)}
                     </span>
@@ -910,7 +910,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
           <div className="bg-[#10141e]/60 backdrop-blur-md border border-slate-800/60 p-4 rounded-2xl">
             <h4 className="font-racing font-bold text-sm text-purple-300 flex items-center gap-1.5 mb-3">
               <Sparkles className="w-4 h-4 text-purple-400" />
-              <span>โค้ดกลยุทธ์ช่วยอะไรในการแข่งบ้าง:</span>
+              <span>How the Lead Strategist Powers Your Race:</span>
             </h4>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
               {STRATEGIST_IMPROVEMENTS.map((imp, idx) => (
@@ -928,7 +928,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
           {/* Available Strategists Candidates */}
           <div>
             <h4 className="text-base font-bold font-racing uppercase tracking-wider text-slate-200 mb-3">
-              ตลาดโค้ดกลยุทธ์ที่ว่างงาน
+              Available Free Agent Strategists
             </h4>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -967,22 +967,22 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
 
                       <div className="grid grid-cols-2 gap-2 my-2.5 text-xs font-mono">
                         <div className="bg-[#0f141d] p-2 rounded-lg text-center">
-                          <span className="text-slate-400 text-[10px] block">🧠 ตัดสินใจ</span>
+                          <span className="text-slate-400 text-[10px] block">🧠 Decision</span>
                           <strong className="text-white">{Math.min(MAX_STAT_CAP, strat.decisions)}</strong>
                         </div>
                         <div className="bg-[#0f141d] p-2 rounded-lg text-center">
-                          <span className="text-slate-400 text-[10px] block">📊 แผนยาง</span>
+                          <span className="text-slate-400 text-[10px] block">📊 Strategy</span>
                           <strong className="text-white">{Math.min(MAX_STAT_CAP, strat.strategy)}</strong>
                         </div>
                       </div>
 
                       <div className="space-y-1 text-xs font-mono pt-2 border-t border-slate-800">
                         <div className="flex justify-between">
-                          <span className="text-slate-400">🏷️ ค่าเซ็นสัญญา:</span>
+                          <span className="text-slate-400">🏷️ Signing Fee:</span>
                           <span className="text-amber-400 font-bold">{formatMoney(strat.hireCost)}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-slate-400">💰 ค่าจ้าง/เรซ:</span>
+                          <span className="text-slate-400">💰 Salary / Race:</span>
                           <span className="text-red-400">{formatMoney(strat.salary)}</span>
                         </div>
                       </div>
@@ -997,7 +997,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
                           : 'bg-slate-800 text-slate-500 cursor-not-allowed'
                       }`}
                     >
-                      {canAfford ? `🤝 จ้างโค้ด (${formatMoney(strat.hireCost)})` : '🔒 เงินไม่พอ'}
+                      {canAfford ? `🤝 Hire Strategist (${formatMoney(strat.hireCost)})` : '🔒 Insufficient Funds'}
                     </button>
                   </div>
                 );
@@ -1018,9 +1018,9 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
               <Wrench className="w-4 h-4" />
             </div>
             <div className="text-sm font-mono text-slate-300 flex items-center gap-2 flex-wrap">
-              <span className="text-amber-400 font-bold">บทบาทในสนามแข่ง:</span>
+              <span className="text-amber-400 font-bold">Race Day Impact:</span>
               <span className="text-lg sm:text-xl font-black font-racing text-white tracking-wide">
-                ลูกศรมินิเกมน้อยลง
+                Fewer QTE Arrows
               </span>
             </div>
           </div>
@@ -1032,7 +1032,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
               <div className="lg:col-span-7 space-y-3">
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-mono font-bold">
                   <Wrench className="w-3.5 h-3.5" />
-                  <span>ทีมพิทครูว์ประจำทีม (PIT CREW)</span>
+                  <span>ACTIVE PIT CREW</span>
                 </div>
 
                 <div className="flex items-center justify-between gap-4">
@@ -1048,7 +1048,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
                         {renderFlag(teamState.pitCrew.nationality, 'md')}
                         <span>{teamState.pitCrew.name}</span>
                       </h3>
-                      <p className="text-xs text-amber-400 font-mono">ระดับ TIER {teamState.pitCrew.level}</p>
+                      <p className="text-xs text-amber-400 font-mono">TIER {teamState.pitCrew.level}</p>
                     </div>
                   </div>
 
@@ -1060,16 +1060,16 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
                   </div>
                 </div>
 
-                {/* Single Focused Highlight Box: ลูกศรมินิเกมน้อยลง */}
+                {/* Single Focused Highlight Box: Fewer QTE Arrows */}
                 <div className="p-4 rounded-xl bg-amber-950/30 border-2 border-amber-500/50 flex items-center justify-between gap-4 backdrop-blur-xs shadow-lg">
                   <div className="flex items-center gap-3">
                     <span className="text-3xl">🎯</span>
                     <div>
                       <h4 className="text-xl sm:text-2xl font-black font-racing text-amber-300 uppercase tracking-wide">
-                        ลูกศรมินิเกมน้อยลง
+                        Fewer QTE Arrows
                       </h4>
                       <p className="text-xs text-amber-200/80 font-mono">
-                        ยิ่งพิทครูว์เก่ง ลูกศรตอนเข้า Pits ยิ่งลดลง
+                        Higher crew rating drastically reduces pit stop arrow inputs
                       </p>
                     </div>
                   </div>
@@ -1077,26 +1077,26 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
                     <span className="text-3xl sm:text-4xl font-black font-mono text-cyan-400">
                       {getPitQteArrowCount(teamState.pitCrew.overall || Math.round((teamState.pitCrew.speed + teamState.pitCrew.precision) / 2))}
                     </span>
-                    <span className="text-xs font-mono text-slate-300 ml-1.5 font-bold">ลูกศร</span>
+                    <span className="text-xs font-mono text-slate-300 ml-1.5 font-bold">Arrows</span>
                   </div>
                 </div>
 
                 {/* 3 Core Stats */}
                 <div className="grid grid-cols-3 gap-2 font-mono text-center">
                   <div className="bg-[#070b10]/45 backdrop-blur-xs p-2.5 rounded-xl border border-slate-800/60">
-                    <span className="text-[10px] text-slate-400 block">⏱️ ความเร็วขันล้อ</span>
+                    <span className="text-[10px] text-slate-400 block">⏱️ Wheel Gun Speed</span>
                     <span className="text-lg font-bold text-white">
                       {Math.min(MAX_STAT_CAP, teamState.pitCrew.speed)} / 99
                     </span>
                   </div>
                   <div className="bg-[#070b10]/45 backdrop-blur-xs p-2.5 rounded-xl border border-slate-800/60">
-                    <span className="text-[10px] text-slate-400 block">🎯 ความแม่นยำ</span>
+                    <span className="text-[10px] text-slate-400 block">🎯 Precision</span>
                     <span className="text-lg font-bold text-white">
                       {Math.min(MAX_STAT_CAP, teamState.pitCrew.precision)} / 99
                     </span>
                   </div>
                   <div className="bg-[#070b10]/45 backdrop-blur-xs p-2.5 rounded-xl border border-slate-800/60">
-                    <span className="text-[10px] text-slate-400 block">💰 ค่าจ้าง/เรซ</span>
+                    <span className="text-[10px] text-slate-400 block">💰 Salary / Race</span>
                     <span className="text-lg font-bold text-red-400">
                       {formatMoney(teamState.pitCrew.salary)}
                     </span>
@@ -1115,7 +1115,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
           <div className="bg-[#10141e]/60 backdrop-blur-md border border-slate-800/60 p-4 rounded-2xl">
             <h4 className="font-racing font-bold text-sm text-amber-300 flex items-center gap-1.5 mb-3">
               <Sparkles className="w-4 h-4 text-amber-400" />
-              <span>พิทครูว์ที่เก่งขึ้น ช่วยอะไรในการแข่งบ้าง:</span>
+              <span>Pit Crew Advantages in Live Racing:</span>
             </h4>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
               {PIT_CREW_IMPROVEMENTS.map((imp, idx) => (
@@ -1133,7 +1133,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
           {/* Available Pit Crews Market */}
           <div>
             <h4 className="text-base font-bold font-racing uppercase tracking-wider text-slate-200 mb-3">
-              ตลาดทีมพิทครูว์ที่พร้อมว่าจ้าง
+              Available Pit Crew Outfits
             </h4>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -1173,32 +1173,32 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
 
                       <div className="my-2.5 bg-[#0d1219] p-2.5 rounded-xl border border-slate-800 flex items-center justify-between px-3 font-mono">
                         <span className="text-sm font-bold text-amber-300 font-racing">
-                          ลูกศรมินิเกมน้อยลง
+                          Fewer QTE Arrows
                         </span>
                         <span className="text-lg font-black text-cyan-400">
                           {getPitQteArrowCount(crew.overall)}{' '}
-                          <span className="text-xs text-slate-300 font-normal">ลูกศร</span>
+                          <span className="text-xs text-slate-300 font-normal">Arrows</span>
                         </span>
                       </div>
 
                       <div className="grid grid-cols-2 gap-2 my-2 text-xs font-mono">
                         <div className="bg-[#0f141d] p-1.5 rounded-lg text-center">
-                          <span className="text-slate-400 text-[10px] block">⏱️ ความเร็ว</span>
+                          <span className="text-slate-400 text-[10px] block">⏱️ Speed</span>
                           <strong className="text-white">{Math.min(MAX_STAT_CAP, crew.speed)}</strong>
                         </div>
                         <div className="bg-[#0f141d] p-1.5 rounded-lg text-center">
-                          <span className="text-slate-400 text-[10px] block">🎯 ความแม่นยำ</span>
+                          <span className="text-slate-400 text-[10px] block">🎯 Precision</span>
                           <strong className="text-white">{Math.min(MAX_STAT_CAP, crew.precision)}</strong>
                         </div>
                       </div>
 
                       <div className="space-y-1 text-xs font-mono pt-2 border-t border-slate-800">
                         <div className="flex justify-between">
-                          <span className="text-slate-400">🏷️ ค่าสัญญา:</span>
+                          <span className="text-slate-400">🏷️ Signing Fee:</span>
                           <span className="text-amber-400 font-bold">{formatMoney(crew.hireCost)}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-slate-400">💰 ค่าจ้าง/เรซ:</span>
+                          <span className="text-slate-400">💰 Salary / Race:</span>
                           <span className="text-red-400">{formatMoney(crew.salary)}</span>
                         </div>
                       </div>
@@ -1213,7 +1213,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
                           : 'bg-slate-800 text-slate-500 cursor-not-allowed'
                       }`}
                     >
-                      {canAfford ? `🤝 จ้างพิทครูว์ (${formatMoney(crew.hireCost)})` : '🔒 เงินไม่พอ'}
+                      {canAfford ? `🤝 Hire Pit Crew (${formatMoney(crew.hireCost)})` : '🔒 Insufficient Funds'}
                     </button>
                   </div>
                 );
@@ -1233,13 +1233,13 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
             <div>
               <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-red-600/20 text-red-400 border border-red-500/30 text-xs font-mono font-bold mb-1">
                 <Gauge className="w-3.5 h-3.5" />
-                <span>โรงงานพัฒนารถแข่ง (R&D FACTORY)</span>
+                <span>R&D ENGINEERING FACTORY</span>
               </div>
               <h3 className="text-2xl font-black font-racing text-white uppercase">
-                อัพเกรดสมรรถนะตัวรถ (CAR UPGRADES)
+                CAR PERFORMANCE UPGRADES
               </h3>
               <p className="text-xs text-slate-300 font-mono mt-0.5">
-                ความเร็วสูงสุดปัจจุบัน: <span className="text-amber-400 font-bold">{estimatedTopSpeed} กม./ชม.</span> • อัตราเร่ง: <span className="text-white font-bold">{estimatedAccel}</span> • พลังเบรก: <span className="text-white font-bold">{estimatedBrake}</span>
+                Current Top Speed: <span className="text-amber-400 font-bold">{estimatedTopSpeed} km/h</span> • Acceleration: <span className="text-white font-bold">{estimatedAccel}</span> • Braking Power: <span className="text-white font-bold">{estimatedBrake}</span>
               </p>
             </div>
 
@@ -1247,7 +1247,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
               <span className="text-4xl font-black font-mono text-red-500 leading-none">
                 {carOverall}
               </span>
-              <span className="text-[10px] text-slate-400 font-mono block font-bold">/ 99 OVR รวม</span>
+              <span className="text-[10px] text-slate-400 font-mono block font-bold">/ 99 Overall Rating</span>
             </div>
           </div>
 
@@ -1261,7 +1261,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="px-2 py-0.5 rounded bg-red-600/20 text-red-400 border border-red-500/30 text-xs font-mono font-bold uppercase tracking-wider">
-                      สนามถัดไป: ROUND {currentRound} / 18
+                      NEXT CIRCUIT: ROUND {currentRound} / 18
                     </span>
                     <span className="text-xs text-slate-400 font-mono">
                       {currentCircuitDemands.stageName} (Tier {currentCircuitDemands.stageTier})
@@ -1290,20 +1290,20 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
               {/* Rival Benchmark */}
               <div className="bg-[#141b27] p-3.5 rounded-xl border border-slate-800">
                 <div className="text-[11px] font-mono text-slate-400 uppercase font-bold">
-                  เกณฑ์ความเร็วคู่แข่งประจำสนาม:
+                  Rival Speed Benchmark:
                 </div>
                 <div className="text-xl font-black font-racing text-amber-400 mt-1">
                   {currentCircuitDemands.rivalSpeedRange}
                 </div>
                 <div className="text-xs text-slate-400 font-mono mt-0.5">
-                  คู่แข่งระดับท็อป: {currentCircuitDemands.topContenders.join(', ')} ({currentCircuitDemands.rivalBenchmarkOvr} OVR)
+                  Top Contenders: {currentCircuitDemands.topContenders.join(', ')} ({currentCircuitDemands.rivalBenchmarkOvr} OVR)
                 </div>
               </div>
 
               {/* Player Car Benchmark & Circuit Fit % */}
               <div className="bg-[#141b27] p-3.5 rounded-xl border border-slate-800">
                 <div className="flex items-center justify-between text-[11px] font-mono uppercase font-bold text-slate-400">
-                  <span>สมรรถนะรถของคุณ:</span>
+                  <span>Your Car Readiness:</span>
                   <span className={`px-2 py-0.5 rounded text-xs font-bold ${
                     circuitFitInfo.circuitFitPct >= 100
                       ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
@@ -1313,19 +1313,19 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
                   </span>
                 </div>
                 <div className="text-xl font-black font-racing text-white mt-1">
-                  {carOverall} OVR • {estimatedTopSpeed} กม./ชม.
+                  {carOverall} OVR • {estimatedTopSpeed} km/h
                 </div>
                 <div className="text-xs font-mono mt-0.5 flex items-center justify-between">
                   <span>
-                    ความเหมาะกับสนาม: <strong className="text-white">{circuitFitInfo.circuitFit} OVR</strong>
+                    Circuit Synergy: <strong className="text-white">{circuitFitInfo.circuitFit} OVR</strong>
                   </span>
                   {circuitFitInfo.circuitFitDelta >= 0 ? (
                     <span className="text-emerald-400 font-bold">
-                      +{circuitFitInfo.circuitFitDelta} แต้ม (+{Math.min(8, Math.round(circuitFitInfo.circuitFitDelta * 0.8))} กม./ชม.)
+                      +{circuitFitInfo.circuitFitDelta} pts (+{Math.min(8, Math.round(circuitFitInfo.circuitFitDelta * 0.8))} km/h)
                     </span>
                   ) : (
                     <span className="text-red-400 font-bold">
-                      {circuitFitInfo.circuitFitDelta} แต้ม ({Math.max(-8, Math.round(circuitFitInfo.circuitFitDelta * 0.8))} กม./ชม.)
+                      {circuitFitInfo.circuitFitDelta} pts ({Math.max(-8, Math.round(circuitFitInfo.circuitFitDelta * 0.8))} km/h)
                     </span>
                   )}
                 </div>
@@ -1342,7 +1342,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
               {/* Track Geometry Demands */}
               <div className="bg-[#141b27] p-3.5 rounded-xl border border-slate-800">
                 <div className="text-[11px] font-mono text-slate-400 uppercase font-bold">
-                  ลักษณะของสนามนี้:
+                  Circuit Profile & Track Characteristics:
                 </div>
                 <div className="text-sm font-bold text-slate-200 mt-1">
                   {currentCircuitDemands.trackTypeDescription}
@@ -1359,7 +1359,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
                 <div className="flex items-center gap-2">
                   <Flame className="w-4 h-4 text-red-400" />
                   <span className="text-xs font-mono font-bold text-red-400 uppercase">
-                    คำแนะนำจากหัวหน้าวิศวกรประจำทีม:
+                    Chief Race Engineer Strategic Briefing:
                   </span>
                 </div>
                 <p className="text-xs text-slate-300 leading-relaxed font-sans">
@@ -1369,7 +1369,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
 
               <div className="flex items-center gap-2 shrink-0">
                 <span className="text-xs font-mono text-slate-400 font-bold uppercase">
-                  ชิ้นส่วนแนะนำ:
+                  Recommended Upgrades:
                 </span>
                 <div className="flex items-center gap-1.5">
                   {currentCircuitDemands.primaryFocus.map((k) => (
@@ -1414,7 +1414,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
                       <div className="mb-2 px-3 py-1 rounded-lg bg-red-950/80 border border-red-500/60 flex items-center justify-between text-xs text-red-200 font-mono font-bold">
                         <span className="flex items-center gap-1.5">
                           <Flame className="w-3.5 h-3.5 text-red-400 animate-pulse" />
-                          ชิ้นส่วนสำคัญยิ่งยวดสำหรับสนาม {currentCircuitDemands.circuitName}!
+                          CRITICAL COMPONENT FOR {currentCircuitDemands.circuitName}!
                         </span>
                         <span className="text-[10px] bg-red-600/40 text-red-200 px-1.5 py-0.5 rounded uppercase">
                           CRITICAL
@@ -1425,7 +1425,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
                       <div className="mb-2 px-3 py-1 rounded-lg bg-amber-950/80 border border-amber-500/60 flex items-center justify-between text-xs text-amber-200 font-mono font-bold">
                         <span className="flex items-center gap-1.5">
                           <Target className="w-3.5 h-3.5 text-amber-400" />
-                          ชิ้นส่วนแนะนำเสริมความได้เปรียบในสนามนี้
+                          HIGH-IMPACT ADVANTAGE FOR THIS CIRCUIT
                         </span>
                         <span className="text-[10px] bg-amber-600/40 text-amber-200 px-1.5 py-0.5 rounded uppercase">
                           RECOMMENDED
@@ -1465,7 +1465,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
                     {/* Progress Bar + Level */}
                     <div className="space-y-1 my-2">
                       <div className="flex justify-between text-xs font-mono">
-                        <span className="text-slate-400">ระดับเลเวล:</span>
+                        <span className="text-slate-400">Rating Level:</span>
                         <span className="text-white font-bold">
                           {isMaxed ? 'MAX (99 OVR)' : `${currentVal} ➔ ${currentVal + 1} (+1 OVR)`}
                         </span>
@@ -1484,7 +1484,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
                       return (
                         <div className="my-2 bg-[#0b1018] p-2.5 rounded-xl border border-slate-800 text-xs font-mono text-slate-300 space-y-1">
                           <div className="flex items-center justify-between text-[10px] text-slate-400 font-bold uppercase">
-                            <span>ผลลัพธ์ในสนามแข่งจริง:</span>
+                            <span>On-Track Impact:</span>
                             <span className="text-emerald-400 font-bold">{impact.perLevelTh}</span>
                           </div>
                           <div className="text-slate-200 text-xs font-sans">
@@ -1497,7 +1497,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
                     {/* Key Effects List */}
                     <div className="mt-3 space-y-1.5">
                       <div className="text-[11px] font-mono text-slate-400 font-bold uppercase">
-                        ประโยชน์ของชิ้นส่วนนี้:
+                        Key Engineering Benefits:
                       </div>
                       <div className="grid grid-cols-2 gap-1.5">
                         {spec.keyEffects.map((eff, eIdx) => (
@@ -1517,7 +1517,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
                   <div className="mt-4 pt-3 border-t border-slate-800">
                     {!isMaxed && (
                       <div className="mb-2.5 p-2 rounded-lg bg-emerald-950/40 border border-emerald-500/40 flex items-center justify-between text-xs font-mono">
-                        <span className="text-slate-300">ผลต่อการแข่ง (+1 แต้ม):</span>
+                        <span className="text-slate-300">Racing Advantage (+1 Level):</span>
                         <strong className="text-emerald-400">{getCarStatUpgradeImpact(key).shortEffectTh}</strong>
                       </div>
                     )}
@@ -1538,20 +1538,20 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
                       {isMaxed ? (
                         <>
                           <CheckCircle className="w-4 h-4 text-emerald-400" />
-                          <span>เลเวลสูงสุดแล้ว (99 OVR)</span>
+                          <span>MAX LEVEL REACHED (99 OVR)</span>
                         </>
                       ) : canAfford ? (
                         <>
                           <Zap className="w-4 h-4 text-amber-300" />
                           <span>
-                            อัพเกรดเป็นเลเวล {currentVal + 1} ({formatMoney(upgradeCost)})
+                            UPGRADE TO LEVEL {currentVal + 1} ({formatMoney(upgradeCost)})
                           </span>
                           <ArrowRight className="w-4 h-4 ml-1 text-white/80" />
                         </>
                       ) : (
                         <>
                           <AlertTriangle className="w-4 h-4 text-red-400" />
-                          <span>เงินไม่พอ (ต้องการ {formatMoney(upgradeCost)})</span>
+                          <span>INSUFFICIENT FUNDS (REQUIRES {formatMoney(upgradeCost)})</span>
                         </>
                       )}
                     </button>
@@ -1567,11 +1567,11 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
               <div className="flex items-center gap-2.5">
                 <Trophy className="w-5 h-5 text-amber-400" />
                 <h4 className="font-racing font-bold text-base text-white uppercase tracking-wider">
-                  เส้นทางความยากตลอดฤดูกาล 18 สนาม (SEASON ROADMAP & RIVAL PROGRESSION)
+                  18-ROUND SEASON ROADMAP & RIVAL PROGRESSION
                 </h4>
               </div>
               <span className="text-xs font-mono text-slate-400">
-                คู่แข่งจะพัฒนาชิ้นส่วน R&D อย่างต่อเนื่องในทุกสเตจ
+                Rival teams continually develop R&D packages across every stage
               </span>
             </div>
 
@@ -1581,10 +1581,10 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
                   tier: 1,
                   title: 'STAGE 1: OPENING FLYAWAYS',
                   rounds: 'Round 1 - 4',
-                  circuits: 'เมลเบิร์น, บาห์เรน, สเปน, โมนาโก',
-                  speed: '320 - 342 กม./ชม.',
+                  circuits: 'Melbourne, Bahrain, Spain, Monaco',
+                  speed: '320 - 342 km/h',
                   recOvr: '70 - 76 OVR',
-                  desc: 'คู่แข่งขับรักษาไลน์ อัพเกรดพื้นฐานเพื่อแย่งโพเดียม',
+                  desc: 'Rivals run conservative lines. Upgrade baseline stats to challenge for early podiums.',
                   isActive: currentRound >= 1 && currentRound <= 4,
                   accent: 'border-blue-500/40 bg-blue-950/20 text-blue-400',
                 },
@@ -1592,10 +1592,10 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
                   tier: 2,
                   title: 'STAGE 2: EUROPEAN SUMMER',
                   rounds: 'Round 5 - 9',
-                  circuits: 'แคนาดา, ซิลเวอร์สโตน, ออสเตรีย, สปา, แซนด์ฟอร์ต',
-                  speed: '338 - 366 กม./ชม.',
+                  circuits: 'Canada, Silverstone, Austria, Spa, Zandvoort',
+                  speed: '338 - 366 km/h',
                   recOvr: '78 - 86 OVR',
-                  desc: 'คู่แข่งนำแพ็กเกจ R&D มาใช้ เร็วขึ้นมากบนทางตรง',
+                  desc: 'Teams deploy mid-season aerodynamic packages; speeds escalate dramatically down straights.',
                   isActive: currentRound >= 5 && currentRound <= 9,
                   accent: 'border-amber-500/40 bg-amber-950/20 text-amber-400',
                 },
@@ -1603,10 +1603,10 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
                   tier: 3,
                   title: 'STAGE 3: HIGH-SPEED & ALTITUDE',
                   rounds: 'Round 10 - 14',
-                  circuits: 'มอนซ่า, สิงคโปร์, ซูซูกะ, ออสติน, เม็กซิโก',
-                  speed: '364 - 388 กม./ชม.',
+                  circuits: 'Monza, Singapore, Suzuka, Austin, Mexico',
+                  speed: '364 - 388 km/h',
                   recOvr: '88 - 95 OVR',
-                  desc: 'สนามความเร็วสูงและออกซิเจนบาง ต้องมีเครื่องยนต์และแอร์โรระดับท็อป',
+                  desc: 'High-speed temples and high altitudes. Top-spec Power Units and Aero packages are mandatory.',
                   isActive: currentRound >= 10 && currentRound <= 14,
                   accent: 'border-red-500/40 bg-red-950/20 text-red-400',
                 },
@@ -1614,10 +1614,10 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
                   tier: 4,
                   title: 'STAGE 4: CHAMPIONSHIP CLIMAX',
                   rounds: 'Round 15 - 18',
-                  circuits: 'อินเตอร์ลากอส, ลาสเวกัส, ยาสมาริน่า, เคปทาวน์',
-                  speed: '382 - 405+ กม./ชม.',
+                  circuits: 'Interlagos, Las Vegas, Yas Marina, Cape Town',
+                  speed: '382 - 405+ km/h',
                   recOvr: '96 - 99 OVR',
-                  desc: 'รอบชิงแชมป์โลก! คู่แข่งระดับตำนานดุดันสูงสุด ต้องอัพเกรดเต็มสูบ',
+                  desc: 'World Championship showdown! Legendary rivals run at peak hyper-speed and ruthless aggression.',
                   isActive: currentRound >= 15 && currentRound <= 18,
                   accent: 'border-purple-500/40 bg-purple-950/20 text-purple-400',
                 },
@@ -1648,11 +1648,11 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
                   </div>
                   <div className="space-y-1 text-[11px] font-mono border-t border-slate-800/80 pt-2">
                     <div className="flex justify-between">
-                      <span className="text-slate-400">ความเร็วคู่แข่ง:</span>
+                      <span className="text-slate-400">Rival Speed:</span>
                       <span className="text-amber-400 font-bold">{st.speed}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-slate-400">เกณฑ์แนะนำ:</span>
+                      <span className="text-slate-400">Recommended OVR:</span>
                       <span className="text-white font-bold">{st.recOvr}</span>
                     </div>
                   </div>
@@ -1673,13 +1673,13 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
             <div>
               <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-mono font-bold mb-1">
                 <GraduationCap className="w-3.5 h-3.5" />
-                <span>อะคาเดมี่เยาวชน (DRIVER ACADEMY)</span>
+                <span>DRIVER ACADEMY</span>
               </div>
               <h3 className="text-2xl font-bold font-racing text-white uppercase">
-                นักแข่งเยาวชนในสังกัด ({teamState.academyDrivers.length} คน)
+                Academy Drivers ({teamState.academyDrivers.length})
               </h3>
               <p className="text-xs text-slate-400 mt-0.5">
-                ส่งแมวมองค้นหาดาวรุ่ง 6 ทวีป แล้วดันขึ้นสู่ทีมชุดใหญ่
+                Deploy global scouts across 6 continents to discover and promote rising stars
               </p>
             </div>
 
@@ -1691,7 +1691,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
               className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-racing font-bold uppercase tracking-wider text-sm shadow-lg shadow-emerald-950 flex items-center gap-2 cursor-pointer transition active:scale-95"
             >
               <Globe className="w-4 h-4" />
-              <span>ส่งแมวมองค้นหาดาวรุ่ง</span>
+              <span>Deploy Global Scouts</span>
             </button>
           </div>
 
@@ -1699,15 +1699,15 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
           {teamState.academyDrivers.length === 0 ? (
             <div className="bg-[#121822]/60 backdrop-blur-md border-2 border-slate-800/60 p-8 rounded-2xl text-center space-y-3">
               <div className="text-3xl">🌟</div>
-              <p className="text-slate-300 font-racing text-base uppercase font-bold">ยังไม่มีนักแข่งเยาวชน</p>
+              <p className="text-slate-300 font-racing text-base uppercase font-bold">NO ACADEMY DRIVERS SIGNED YET</p>
               <p className="text-xs text-slate-400 max-w-sm mx-auto">
-                ส่งแมวมองไปสำรวจทวีปต่างๆ เพื่อค้นหาดาวรุ่งระดับ S-Tier
+                Deploy scouts across the globe to discover prodigies and future champions
               </p>
               <button
                 onClick={() => setScoutingReportOpen(true)}
                 className="mt-1 px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-racing font-bold text-xs rounded-xl uppercase cursor-pointer transition shadow-md active:scale-95"
               >
-                🔍 ส่งแมวมองตอนนี้
+                🔍 Scout Now
               </button>
             </div>
           ) : (
@@ -1731,7 +1731,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
                             <h4 className="text-base font-bold font-racing text-white">{prospect.name}</h4>
                           </div>
                           <p className="text-xs text-slate-400 font-mono">
-                            อายุ {prospect.age} • {prospect.nationality.name}
+                            Age {prospect.age} • {prospect.nationality.name}
                           </p>
                         </div>
                       </div>
@@ -1747,15 +1747,15 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
                     {/* Stats */}
                     <div className="grid grid-cols-3 gap-2 my-2.5 bg-[#0d1219] p-2 rounded-xl text-center font-mono">
                       <div>
-                        <div className="text-[10px] text-slate-400">⚡ ความเร็ว</div>
+                        <div className="text-[10px] text-slate-400">⚡ Pace</div>
                         <div className="text-xs font-bold text-red-400">{Math.min(MAX_STAT_CAP, prospect.pace)}</div>
                       </div>
                       <div>
-                        <div className="text-[10px] text-slate-400">⚔️ การแซง</div>
+                        <div className="text-[10px] text-slate-400">⚔️ Racecraft</div>
                         <div className="text-xs font-bold text-blue-400">{Math.min(MAX_STAT_CAP, prospect.raceCraft)}</div>
                       </div>
                       <div>
-                        <div className="text-[10px] text-slate-400">🎓 คุมยาง</div>
+                        <div className="text-[10px] text-slate-400">🎓 Experience</div>
                         <div className="text-xs font-bold text-emerald-400">{Math.min(MAX_STAT_CAP, prospect.experience)}</div>
                       </div>
                     </div>
@@ -1763,9 +1763,9 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
                     {/* Potential badge */}
                     <div className="bg-[#0f141d] p-2.5 rounded-xl border border-slate-800 flex items-center justify-between">
                       <div className="flex items-center gap-1.5">
-                        <span className="text-xs text-slate-300 font-racing">🌟 ศักยภาพ:</span>
+                        <span className="text-xs text-slate-300 font-racing">🌟 Potential:</span>
                         <span className="font-mono font-bold text-amber-400 text-xs px-2 py-0.5 rounded bg-amber-950/40 border border-amber-500/30">
-                          เกรด {prospect.potentialGrade} ({prospect.potentialMin} - {prospect.potentialMax} OVR)
+                          Grade {prospect.potentialGrade} ({prospect.potentialMin} - {prospect.potentialMax} OVR)
                         </span>
                       </div>
                       <button
@@ -1773,7 +1773,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
                           sound.playClick();
                           setSelectedPotentialDriver(prospect);
                         }}
-                        title="ดูรายละเอียด"
+                        title="View Details"
                         className="p-1 rounded bg-slate-800 hover:bg-slate-700 text-amber-400 transition cursor-pointer"
                       >
                         <HelpCircle className="w-3.5 h-3.5" />
@@ -1790,7 +1790,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
                       }}
                       className="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-black rounded-xl text-xs font-racing tracking-wide uppercase transition cursor-pointer text-center active:scale-95"
                     >
-                      🚀 ดันขึ้นทีมชุดใหญ่ (PROMOTE)
+                      🚀 PROMOTE TO MAIN TEAM
                     </button>
                   </div>
                 </div>
@@ -1813,10 +1813,10 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-white font-racing uppercase tracking-wide">
-                    เครือข่ายแมวมองทั่วโลก
+                    GLOBAL SCOUTING NETWORK
                   </h3>
                   <p className="text-xs text-slate-400">
-                    ส่งแมวมองออกสำรวจเพื่อค้นพบดาวรุ่ง
+                    Dispatch scouts to uncover next-generation talent
                   </p>
                 </div>
               </div>
@@ -1837,10 +1837,10 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <h4 className="font-bold text-sm font-racing uppercase text-slate-200">
-                      แมวมองในสังกัด
+                      Active Scouts
                     </h4>
                     <p className="text-xs text-slate-400">
-                      มีอยู่: <strong className="text-amber-400 font-mono">{teamState.scouts.length}</strong> / <strong className="font-mono">{teamState.maxScouts}</strong> คน
+                      Roster: <strong className="text-amber-400 font-mono">{teamState.scouts.length}</strong> / <strong className="font-mono">{teamState.maxScouts}</strong> Scouts
                     </p>
                   </div>
 
@@ -1852,7 +1852,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
                     className="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold font-racing text-xs uppercase tracking-wider rounded-lg transition cursor-pointer flex items-center gap-1.5 active:scale-95"
                   >
                     <Star className="w-3.5 h-3.5 fill-slate-950" />
-                    <span>จ้างแมวมองเพิ่ม</span>
+                    <span>Hire Additional Scouts</span>
                   </button>
                 </div>
 
@@ -1875,7 +1875,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
                               <Star key={i} className="w-3 h-3 fill-amber-400" />
                             ))}
                             <span className="text-[10px] text-slate-400 ml-1 font-mono">
-                              (โอกาสพบ 85+ OVR: {Math.round(scout.highTierChance * 100)}%)
+                              (85+ OVR Chance: {Math.round(scout.highTierChance * 100)}%)
                             </span>
                           </div>
                         </div>
@@ -1891,7 +1891,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
               {/* 6 Continents Grid */}
               <div className="space-y-2">
                 <span className="text-xs font-mono text-slate-400 uppercase tracking-wider font-bold">
-                  เลือกทวีปเพื่อส่งแมวมองไปสำรวจ:
+                  Select a Continent to Scout:
                 </span>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   {(Object.keys(teamState.continents) as ContinentName[]).map((continentKey) => {
@@ -1909,12 +1909,12 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
                                 <h4 className="font-bold text-sm font-racing text-white uppercase">
                                   {cont.name}
                                 </h4>
-                                <span className="text-[10px] text-slate-400 font-mono">ทวีป</span>
+                                <span className="text-[10px] text-slate-400 font-mono">CONTINENT</span>
                               </div>
                             </div>
 
                             <span className="text-xs font-mono font-bold text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-500/30">
-                              พบแล้ว {cont.scannedDriversCount} คน
+                              {cont.scannedDriversCount} Prospects Found
                             </span>
                           </div>
                         </div>
@@ -1923,7 +1923,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
                           onClick={() => handleScanContinent(continentKey)}
                           className="mt-3 w-full py-2 bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg text-xs font-racing font-bold tracking-wider uppercase transition cursor-pointer text-center flex items-center justify-center gap-1 active:scale-95 shadow"
                         >
-                          <span>🔍 สำรวจ ($150,000)</span>
+                          <span>🔍 Scout Region ($150,000)</span>
                         </button>
                       </div>
                     );
@@ -1948,10 +1948,10 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-white font-racing uppercase tracking-wide">
-                    ตลาดว่าจ้างแมวมอง
+                    Scout Recruitment Agency
                   </h3>
                   <p className="text-xs text-slate-400">
-                    งบประมาณคงเหลือ: <span className="text-emerald-400 font-mono font-bold">{formatMoney(teamState.budget)}</span>
+                    Available Budget: <span className="text-emerald-400 font-mono font-bold">{formatMoney(teamState.budget)}</span>
                   </p>
                 </div>
               </div>
@@ -1988,8 +1988,8 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
                         </div>
                       </div>
                       <p className="text-xs text-slate-400 mt-0.5">
-                        ความถนัด: <span className="text-slate-200 font-semibold">{cand.specialty}</span> • 
-                        โอกาสพบ 85+ OVR: <strong className="text-amber-400 font-mono">{Math.round(cand.highTierChance * 100)}%</strong>
+                        Specialty: <span className="text-slate-200 font-semibold">{cand.specialty}</span> • 
+                        85+ OVR Chance: <strong className="text-amber-400 font-mono">{Math.round(cand.highTierChance * 100)}%</strong>
                       </p>
                     </div>
                   </div>
@@ -2002,13 +2002,13 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
 
                     <div className="text-right text-xs font-mono">
                       <div className="text-amber-300 font-bold">{formatMoney(cand.hireCost)}</div>
-                      <div className="text-slate-500 text-[10px]">ค่าจ้าง {formatMoney(cand.salary)} / เรซ</div>
+                      <div className="text-slate-500 text-[10px]">Salary: {formatMoney(cand.salary)} / race</div>
                     </div>
                     <button
                       onClick={() => handleHireScout(cand)}
                       className="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-500 text-slate-950 font-racing font-bold text-xs uppercase tracking-wider rounded-lg transition cursor-pointer active:scale-95"
                     >
-                      จ้างแมวมอง
+                      Hire Scout
                     </button>
                   </div>
                 </div>
@@ -2028,7 +2028,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
               <div className="flex items-center gap-1.5">
                 <HelpCircle className="w-4 h-4 text-amber-400" />
                 <h3 className="font-bold text-base font-racing text-white uppercase">
-                  ศักยภาพของดาวรุ่ง
+                  PROSPECT DEVELOPMENT POTENTIAL
                 </h3>
               </div>
               <button
@@ -2052,18 +2052,18 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
                     <span>{selectedPotentialDriver.name}</span>
                   </div>
                   <div className="text-slate-400 mt-0.5">
-                    คะแนนปัจจุบัน: <strong className="text-emerald-400 font-mono text-sm">{selectedPotentialDriver.overall} OVR</strong>
+                    Current Overall: <strong className="text-emerald-400 font-mono text-sm">{selectedPotentialDriver.overall} OVR</strong>
                   </div>
                 </div>
               </div>
 
               <div className="bg-amber-950/20 border border-amber-500/30 p-3 rounded-xl space-y-1.5 font-mono">
                 <div className="flex justify-between">
-                  <span className="text-slate-300">เกรดศักยภาพ:</span>
+                  <span className="text-slate-300">Potential Grade:</span>
                   <span className="text-amber-400 font-bold">{selectedPotentialDriver.potentialGrade} TIER</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-300">เพดานพัฒนาสูงสุด:</span>
+                  <span className="text-slate-300">Projected Peak Rating:</span>
                   <span className="text-amber-300 font-bold">
                     {selectedPotentialDriver.potentialMin} - {Math.min(MAX_STAT_CAP, selectedPotentialDriver.potentialMax)} OVR
                   </span>
@@ -2075,7 +2075,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
               onClick={() => setSelectedPotentialDriver(null)}
               className="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-racing font-bold tracking-wider uppercase transition cursor-pointer"
             >
-              ปิดหน้าต่าง
+              Close Window
             </button>
           </div>
         </div>
@@ -2091,7 +2091,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
               <div className="flex items-center gap-1.5">
                 <Sparkles className="w-4 h-4 text-emerald-400" />
                 <h3 className="font-bold text-base font-racing text-white uppercase">
-                  เลื่อนขั้นขึ้นสู่ทีมชุดใหญ่
+                  PROMOTE TO MAIN TEAM SEAT
                 </h3>
               </div>
               <button
@@ -2115,7 +2115,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
                   <span className="text-xs font-mono text-emerald-400">({promoteCandidate.overall} OVR)</span>
                 </div>
                 <p className="text-xs text-slate-300 mt-0.5">
-                  เลือกตำแหน่งที่นั่งให้กับ {promoteCandidate.name}:
+                  Assign race seat for {promoteCandidate.name}:
                 </p>
               </div>
             </div>
@@ -2133,14 +2133,14 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
                     size="sm"
                   />
                   <div>
-                    <span className="text-[10px] text-blue-400 font-mono font-bold block">🏎️ แทนที่นั่ง 1</span>
+                    <span className="text-[10px] text-blue-400 font-mono font-bold block">🏎️ Assign to Seat 1</span>
                     <div className="font-bold text-white text-xs font-racing truncate">
                       {teamState.driver1.name}
                     </div>
                   </div>
                 </div>
                 <div className="text-[11px] text-slate-400 font-mono">
-                  ปัจจุบัน: {teamState.driver1.overall} OVR
+                  Current: {teamState.driver1.overall} OVR
                 </div>
               </button>
 
@@ -2156,14 +2156,14 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({
                     size="sm"
                   />
                   <div>
-                    <span className="text-[10px] text-blue-400 font-mono font-bold block">🏎️ แทนที่นั่ง 2</span>
+                    <span className="text-[10px] text-blue-400 font-mono font-bold block">🏎️ Assign to Seat 2</span>
                     <div className="font-bold text-white text-xs font-racing truncate">
                       {teamState.driver2.name}
                     </div>
                   </div>
                 </div>
                 <div className="text-[11px] text-slate-400 font-mono">
-                  ปัจจุบัน: {teamState.driver2.overall} OVR
+                  Current: {teamState.driver2.overall} OVR
                 </div>
               </button>
             </div>

@@ -50,7 +50,7 @@ export const CircuitAtmosphereBackground: React.FC<CircuitAtmosphereBackgroundPr
     }
   }, [forcedRound]);
 
-  // Main 10-Second Cycling Timer for Menus (Completely frozen during races: "ระหว่างแข่งห้ามเปลี่ยน")
+  // Main 10-Second Cycling Timer for Menus (Completely frozen during races)
   useEffect(() => {
     if (isPaused || isRacing) {
       if (timerRef.current) clearInterval(timerRef.current);
@@ -161,9 +161,9 @@ export const CircuitAtmosphereBackground: React.FC<CircuitAtmosphereBackgroundPr
               </div>
               <span className="text-[9px] text-slate-500 truncate max-w-[130px] sm:max-w-[200px]">
                 {isRacing
-                  ? 'ล็อกฉากหลังสนามแข่งปัจจุบัน (ไม่เปลี่ยนขณะแข่ง)'
+                  ? 'Locked to active Grand Prix circuit backdrop during race'
                   : forcedRound !== undefined
-                  ? `สนามแข่งขันรอบที่ ${currentCircuit.round} (${currentCircuit.circuitName})`
+                  ? `Round ${currentCircuit.round} (${currentCircuit.circuitName})`
                   : currentCircuit.circuitName}
               </span>
             </div>

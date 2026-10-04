@@ -255,7 +255,7 @@ export const ChampionshipStandingsCard: React.FC<ChampionshipStandingsCardProps>
                     <Trophy className="w-4 h-4" />
                   </span>
                   <span className="text-xs sm:text-sm font-racing font-black text-amber-400 uppercase tracking-wider">
-                    YOUR TEAM CHAMPIONSHIP POSITION • อันดับทีมของคุณในตารางคะแนน
+                    YOUR TEAM CHAMPIONSHIP POSITION
                   </span>
                 </div>
                 <span className="text-[11px] font-mono text-slate-400 hidden sm:inline">

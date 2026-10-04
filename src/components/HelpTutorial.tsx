@@ -96,25 +96,25 @@ export const HelpTutorial: React.FC = () => {
           </h3>
           <div className="bg-amber-950/20 border border-amber-500/40 p-4 rounded-xl space-y-2">
             <p className="text-amber-200">
-              <strong>Quick Time Event (QTE) ลูกศร & ฝีมือลูกเรือ:</strong> ระหว่างการเข้า Pit Stop จะมีลูกศร WASD / ปุ่มทิศทาง ให้กดตามลำดับ
+              <strong>Quick Time Event (QTE) Arrows & Pit Crew Skill:</strong> During pit stops, follow the WASD / Arrow sequence accurately:
             </p>
             <ul className="list-disc list-inside text-xs space-y-1 text-slate-300">
-              <li><strong className="text-emerald-400">ยิ่งลูกเรือฝีมือดี ลูกศรยิ่งน้อยลง:</strong> ลูกเรือระดับแชมป์ (95+ OVR) มีเพียง 4 ลูกศร ขณะที่ลูกเรือฝึกหัด (&lt;55 OVR) ต้องกดถึง 10 ลูกศร!</li>
-              <li><strong className="text-amber-400">ยิ่งกดเร็ว ยิ่งออก Pit เร็ว:</strong> การกดถูกต้องแต่ละครั้งจะลดเวลา Pit Stop ลงทันที (-0.35s) พร้อม Rocket Launch พุ่งออกจาก Pit ด้วยความเร็วสูง</li>
-              <li><strong className="text-cyan-400">Speed & Precision:</strong> ลดโอกาสเกิดความผิดพลาดน็อตล้อสะดุด และทำเวลาเปลี่ยนยางเร็วในระดับ 1.8 - 2.2 วินาที</li>
-              <li><strong className="text-rose-400">ระบบเตือนเข้า Pit 500m:</strong> ป้ายสัญญาณเตือนลูกศรและตัวเลขระยะทางจะแจ้งเตือนเมื่ออยู่ห่างจากทางเข้า Pit 500 เมตร (หากลืมเข้าจนยางแตก สามารถเลี้ยวเข้า Pit ในรอบถัดไปเพื่อเปลี่ยนยางใหม่ และรถจะกลับมาสมบูรณ์ 100%)</li>
+              <li><strong className="text-emerald-400">Elite Crew = Fewer Arrows:</strong> Championship-grade crews (95+ OVR) require only 4 arrows, while rookie crews (&lt;55 OVR) require up to 10 arrows!</li>
+              <li><strong className="text-amber-400">Faster Inputs = Shorter Stop:</strong> Each correct input instantly shaves off pit stop time (-0.35s) followed by a rocket safe release launch.</li>
+              <li><strong className="text-cyan-400">Speed & Precision:</strong> Minimizes cross-thread nut jams and clocks lightning 1.8 - 2.2 second stationary stops.</li>
+              <li><strong className="text-rose-400">500m Pit Entry Alert:</strong> Signage and telemetry distance alerts sound 500m before pit entrance. (If tires blow out, pit on the next lap for fresh rubber to restore 100% car condition).</li>
             </ul>
           </div>
           <div className="bg-cyan-950/20 border border-cyan-500/40 p-4 rounded-xl space-y-2 text-xs">
-            <strong className="text-cyan-300 font-racing text-sm block">⚡ Shift to Nitro & การแข่งขันกับคู่แข่ง:</strong>
+            <strong className="text-cyan-300 font-racing text-sm block">⚡ Shift to Nitro & Head-to-Head Racing:</strong>
             <p>
-              • <strong>กดปุ่ม Shift หรือ Spacebar:</strong> เพื่อเปิดระบบ Turbo Nitro Boost เพิ่มความเร็วสูงสุดแตะ 350 KM/H (ความเร็วปกติไม่ใช้ไนโตรประมาณ 300 KM/H) พุ่งทะยานแซงคู่แข่งด้วยเปลวไฟ Afterburner!
+              • <strong>Press Shift or Spacebar:</strong> Deploy Turbo Nitro Boost to rocket up to 350 KM/H (standard cruise ~300 KM/H) with afterburner exhaust flames!
             </p>
             <p>
-              • <strong>ระบบ Cooldown Reload เต็ม 100%:</strong> หากใช้ Nitro จนหมดเกลี้ยง (0%) ระบบจะล็อกทันทีและไม่สามารถกดใช้ใหม่ได้จนกว่าหลอด Nitro จะรีโหลดกลับมาเต็ม 100% เท่านั้น จึงต้องบริหารการบูสต์อย่างชาญฉลาด!
+              • <strong>100% Cooldown Reload:</strong> Depleting Nitro to 0% locks the boost until the meter fully recharges to 100%. Manage your nitro strategically!
             </p>
             <p>
-              • <strong>การต่อสู้กับคู่แข่งสุดสูสี (±100m Duel):</strong> คู่แข่งวิ่งด้วยความเร็วสูสีกับผู้เล่น (ปกติ ~300 KM/H, ใช้ไนโตร ~350 KM/H) และเมื่อคู่แข่งแซงขึ้นหน้าผู้เล่นในระยะ ±100 เมตร ความเร็วจะปรับสูสีเท่าผู้เล่น เปิดโอกาสให้ดูดลมสลิปสตรีม ดวลล้อต่อล้อ และหาจังหวะสวนกลับได้อย่างเร้าใจ!
+              • <strong>Competitive ±100m Racing:</strong> Rivals race at benchmark pace (~300 KM/H, nitro ~350 KM/H). Within ±100m, pace balances to enable thrilling slipstream drafting, wheel-to-wheel duels, and tactical counter-attacks!
             </p>
           </div>
         </div>

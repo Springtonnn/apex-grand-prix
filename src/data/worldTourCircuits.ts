@@ -339,7 +339,7 @@ export const WORLD_TOUR_CIRCUITS: WorldTourCircuitDef[] = [
   },
 
   // ---------------------------------------------------------------------------
-  // ROUND 5: THAILAND GRAND PRIX (Bangkok River Street Circuit - พ.ศ. 2571 / 2028)
+  // ROUND 5: THAILAND GRAND PRIX (Bangkok River Street Circuit - 2028)
   // ---------------------------------------------------------------------------
   {
     round: 5,
@@ -350,7 +350,7 @@ export const WORLD_TOUR_CIRCUITS: WorldTourCircuitDef[] = [
     country: 'Thailand',
     flag: '🇹🇭',
     environmentName: 'Chao Phraya Riverfront & Royal Rattanakosin Metropolis',
-    environmentDescription: 'Spectacular twilight river circuit passing Wat Arun, Rama VIII Bridge, and futuristic Bangkok skyline (F1 Thailand Grand Prix พ.ศ. 2571)',
+    environmentDescription: 'Spectacular twilight river circuit passing Wat Arun, Rama VIII Bridge, and futuristic Bangkok skyline (F1 Thailand Grand Prix 2028)',
     skyGradient: ['#1e1b4b', '#4c1d95', '#b45309', '#f59e0b'],
     celestialFeature: 'heat_haze',
     horizonType: 'bangkok_river',

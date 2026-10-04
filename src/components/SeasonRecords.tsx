@@ -102,7 +102,7 @@ export const SeasonRecords: React.FC<SeasonRecordsProps> = ({
                 CHAMPIONSHIP STANDINGS & RECORDS
               </h1>
               <p className="text-xs text-slate-400 font-mono mt-0.5">
-                คะแนนสะสมชิงแชมป์โลก, ประวัติผลการแข่งขันแต่ละสนาม และสถิติตลอดกาลของทีม
+                World championship standings, race results history, and all-time team records
               </p>
             </div>
           </div>
@@ -177,7 +177,7 @@ export const SeasonRecords: React.FC<SeasonRecordsProps> = ({
             }`}
           >
             <Trophy className="w-4 h-4 text-amber-400" />
-            <span>STANDINGS (ตารางคะแนน)</span>
+            <span>STANDINGS</span>
           </button>
 
           <button
@@ -192,7 +192,7 @@ export const SeasonRecords: React.FC<SeasonRecordsProps> = ({
             }`}
           >
             <Flag className="w-4 h-4 text-red-400" />
-            <span>RACE LOGS (ประวัติการแข่ง)</span>
+            <span>RACE LOGS</span>
           </button>
 
           <button
@@ -207,7 +207,7 @@ export const SeasonRecords: React.FC<SeasonRecordsProps> = ({
             }`}
           >
             <Calendar className="w-4 h-4 text-blue-400" />
-            <span>SEASONS ARCHIVE (ฤดูกาล)</span>
+            <span>SEASONS ARCHIVE</span>
           </button>
         </div>
 
@@ -267,7 +267,7 @@ export const SeasonRecords: React.FC<SeasonRecordsProps> = ({
                   <span>RACE-BY-RACE TELEMETRY LOG</span>
                 </h3>
                 <p className="text-xs text-slate-400 font-mono mt-0.5">
-                  ผลการแข่งขันอย่างเป็นทางการของ {teamState.teamName} ในฤดูกาลที่ {selectedSeason.seasonNumber}
+                  Official race classification for {teamState.teamName} in Season {selectedSeason.seasonNumber}
                 </p>
               </div>
 
@@ -282,9 +282,9 @@ export const SeasonRecords: React.FC<SeasonRecordsProps> = ({
             {selectedSeason.raceLogs.length === 0 ? (
               <div className="p-12 text-center text-slate-400 font-mono space-y-3">
                 <Clock className="w-10 h-10 text-slate-600 mx-auto" />
-                <p className="text-sm font-bold text-slate-300">ยังไม่มีประวัติการแข่งในฤดูกาลนี้</p>
+                <p className="text-sm font-bold text-slate-300">No race records in this season yet</p>
                 <p className="text-xs text-slate-500">
-                  เข้าสู่หน้า <strong className="text-red-400">CHAMPIONSHIP</strong> เพื่อเริ่มแข่งขันสนามแรก
+                  Go to the <strong className="text-red-400">CHAMPIONSHIP</strong> tab to start your first Grand Prix
                 </p>
                 <button
                   onClick={() => {
@@ -305,7 +305,7 @@ export const SeasonRecords: React.FC<SeasonRecordsProps> = ({
                     <tr>
                       <th className="py-3 px-4">ROUND</th>
                       <th className="py-3 px-4">GRAND PRIX & CIRCUIT</th>
-                      <th className="py-3 px-4">RACE WINNER (ผู้ชนะสนาม)</th>
+                      <th className="py-3 px-4">RACE WINNER</th>
                       <th className="py-3 px-4">SEAT 1 ({teamState.driver1.name})</th>
                       <th className="py-3 px-4">SEAT 2 ({teamState.driver2.name})</th>
                       <th className="py-3 px-4 text-center">POINTS EARNED</th>
@@ -475,10 +475,10 @@ export const SeasonRecords: React.FC<SeasonRecordsProps> = ({
             <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-800 mb-6">
               <div>
                 <h3 className="text-xl font-racing font-bold text-white uppercase tracking-wider">
-                  ALL SEASONS ARCHIVE • ประวัติศาสตร์ทุกฤดูกาล
+                  ALL SEASONS ARCHIVE • Complete History
                 </h3>
                 <p className="text-xs text-slate-400 font-mono mt-0.5">
-                  ประวัติผลงานสะสมของทีม {teamState.teamName} ในแต่ละฤดูกาล
+                  Historical team records and championship achievements for {teamState.teamName}
                 </p>
               </div>
 

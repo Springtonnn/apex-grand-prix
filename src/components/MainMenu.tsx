@@ -14,6 +14,8 @@ import {
   Timer,
   ChevronRight,
   Flag,
+  Save,
+  Play,
 } from 'lucide-react';
 import { TeamState } from '../types/game';
 import { calculateCarOverall, formatMoney, calculatePitStopDuration } from '../utils/calculations';
@@ -32,6 +34,7 @@ interface MainMenuProps {
   onOpenTab: (tab: 'drivers' | 'strategist' | 'pitcrew' | 'car' | 'academy') => void;
   onReplayIntro?: () => void;
   onOpenSaveSlots?: () => void;
+  onOpenTrophyCeremony?: () => void;
   isIntroActive?: boolean;
   onOpenChampionshipSubTab?: (subTab: 'race-day' | 'standings' | 'calendar' | 'auto-race') => void;
 }
@@ -42,6 +45,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({
   onOpenTab,
   onReplayIntro,
   onOpenSaveSlots,
+  onOpenTrophyCeremony,
   isIntroActive = false,
   onOpenChampionshipSubTab,
 }) => {
@@ -124,16 +128,44 @@ export const MainMenu: React.FC<MainMenuProps> = ({
               </span>
             </div>
 
-            {/* PROMINENT CHAMPIONSHIP & RACE HUB BUTTON */}
+            {/* PROMINENT ACTION BUTTONS: TRY NEW SAVE, TROPHY CEREMONY, AND RACE NOW */}
             <div className="mt-6 sm:mt-7 flex flex-wrap items-center gap-3">
+              {/* 1. TRY NEW SAVE BUTTON (Change race hub button to try new save) */}
+              <button
+                type="button"
+                onClick={() => {
+                  sound.playClick();
+                  onOpenSaveSlots?.();
+                }}
+                className="group relative inline-flex items-center justify-center gap-2.5 px-6 sm:px-7 py-3 sm:py-3.5 rounded-xl bg-gradient-to-r from-blue-700 via-indigo-600 to-blue-700 hover:from-blue-600 hover:to-indigo-500 text-white font-black font-racing uppercase tracking-wider text-sm sm:text-base shadow-[0_0_20px_rgba(59,130,246,0.45)] hover:shadow-[0_0_30px_rgba(59,130,246,0.7)] border-2 border-blue-400/60 transition-all duration-200 cursor-pointer active:scale-95"
+              >
+                <Save className="w-4 h-4 text-blue-200 group-hover:scale-110 transition-transform" />
+                <span>TRY NEW SAVE</span>
+              </button>
+
+              {/* 2. VIEW CHAMPIONSHIP TROPHY BUTTON (View trophy ceremony button on main menu) */}
+              <button
+                type="button"
+                onClick={() => {
+                  sound.playClick();
+                  sound.playTrophy();
+                  onOpenTrophyCeremony?.();
+                }}
+                className="group relative inline-flex items-center justify-center gap-2.5 px-6 sm:px-7 py-3 sm:py-3.5 rounded-xl bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-600 hover:from-amber-500 hover:to-yellow-400 text-slate-950 font-black font-racing uppercase tracking-wider text-sm sm:text-base shadow-[0_0_20px_rgba(245,158,11,0.5)] hover:shadow-[0_0_35px_rgba(245,158,11,0.8)] border-2 border-yellow-300 transition-all duration-200 cursor-pointer active:scale-95"
+              >
+                <Trophy className="w-5 h-5 text-amber-950 group-hover:scale-125 transition-transform" />
+                <span>VIEW TROPHY CEREMONY</span>
+              </button>
+
+              {/* 3. RACE CURRENT GRAND PRIX BUTTON */}
               <button
                 type="button"
                 onClick={handleRaceNow}
-                className="group relative inline-flex items-center justify-center gap-3 px-7 sm:px-9 py-3.5 sm:py-4 rounded-xl bg-gradient-to-r from-red-600 via-red-500 to-red-600 hover:from-red-500 hover:to-red-600 text-white font-black font-racing uppercase tracking-wider text-base sm:text-lg shadow-[0_0_25px_rgba(239,68,68,0.5)] hover:shadow-[0_0_35px_rgba(239,68,68,0.7)] border-2 border-red-400/60 transition-all duration-200 cursor-pointer active:scale-95"
+                className="group relative inline-flex items-center justify-center gap-2.5 px-6 sm:px-7 py-3 sm:py-3.5 rounded-xl bg-gradient-to-r from-red-600 via-red-500 to-red-600 hover:from-red-500 hover:to-red-600 text-white font-black font-racing uppercase tracking-wider text-sm sm:text-base shadow-[0_0_20px_rgba(239,68,68,0.5)] hover:shadow-[0_0_30px_rgba(239,68,68,0.7)] border-2 border-red-400/60 transition-all duration-200 cursor-pointer active:scale-95"
               >
-                <Trophy className="w-5 h-5 text-amber-300 group-hover:scale-110 transition-transform" />
-                <span>CHAMPIONSHIP & RACE HUB</span>
-                <ArrowRight className="w-5 h-5 text-white/90 group-hover:translate-x-1.5 transition-transform" />
+                <Play className="w-4 h-4 text-white group-hover:scale-110 transition-transform" />
+                <span>RACE ROUND {nextGp}</span>
+                <ArrowRight className="w-4 h-4 text-white/90 group-hover:translate-x-1 transition-transform" />
               </button>
             </div>
           </div>
@@ -197,7 +229,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({
               <span className="text-xs font-mono text-slate-400 font-bold uppercase">/ 99 OVR</span>
             </div>
 
-            {/* Prominent Large Engine & Aero Stats (As requested: ใหญ่ขึ้น ชัดเจนขึ้น) */}
+            {/* Prominent Large Engine & Aero Stats (As requested: Larger and clearer) */}
             <div className="mt-4 space-y-3 font-mono">
               {/* Engine */}
               <div className="bg-[#070b10]/45 backdrop-blur-xs p-3 rounded-xl border border-slate-800/60">
@@ -422,9 +454,9 @@ export const MainMenu: React.FC<MainMenuProps> = ({
               </div>
               <div className="text-right">
                 <span className="text-xs font-mono font-bold text-cyan-400 block">
-                  🎯 {getPitQteArrowCount(teamState.pitCrew.overall || Math.round((teamState.pitCrew.speed + teamState.pitCrew.precision) / 2))} ลูกศร
+                  🎯 {getPitQteArrowCount(teamState.pitCrew.overall || Math.round((teamState.pitCrew.speed + teamState.pitCrew.precision) / 2))} Arrows
                 </span>
-                <span className="text-[10px] font-mono text-slate-500">มินิเกมเข้า Pits</span>
+                <span className="text-[10px] font-mono text-slate-500">Pit Stop Minigame</span>
               </div>
             </div>
 

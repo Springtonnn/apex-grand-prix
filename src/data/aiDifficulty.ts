@@ -13,7 +13,7 @@ export const AI_DIFFICULTY = {
   aiNitroRecharge: 14, // AI nitro recharge rate (%/s) - unchanged
   rubberBandStartM: 250, // Gap ahead before gentle speed trim (-6 km/h max) to keep AI visible
 
-  // AI Rubber-Band Cheat System (ข้อ 1)
+  // AI Rubber-Band Cheat System (Rule 1)
   cheatLevel: 1, // 0 = disabled, 1 = normal, 2 = extreme (multiplier: 0 / 1.0 / 1.5)
   chaserBonusMin: 4, // km/h above player speed
   chaserBonusMax: 14, // km/h above player speed

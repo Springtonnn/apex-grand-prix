@@ -100,27 +100,27 @@ export const PitCrewBoxIllustrationSVG: React.FC<{ className?: string }> = ({
 
 export const PIT_CREW_IMPROVEMENTS = [
   {
-    title: 'ลูกศรมินิเกมน้อยลง',
-    description: 'จำนวนลูกศรตรงมินิเกมเข้าพิทจะน้อยลง (จาก 10 เหลือเพียง 4-5 ลูกศร)',
-    impact: 'กดผ่านได้ไวมาก',
+    title: 'Fewer QTE Arrows',
+    description: 'Reduces pit stop minigame QTE sequence arrows from 10 down to 4-5 arrows',
+    impact: 'Lightning Fast Input',
     icon: '🎯',
   },
   {
-    title: 'กดผ่านพิทได้ไวขึ้น',
-    description: 'ลูกศรน้อยลง ทำให้กดคีย์ลัดผ่านได้อย่างรวดเร็วในเสี้ยววินาที',
-    impact: 'ไม่เสียจังหวะในสนาม',
+    title: 'Rapid Pit Clearance',
+    description: 'Fewer arrow inputs let you clear the pit stop in a fraction of a second',
+    impact: 'Zero Track Hesitation',
     icon: '⚡',
   },
   {
-    title: 'เปลี่ยนยางเร็วขึ้น',
-    description: 'จอดเปลี่ยนยางสั้นลงเหลือเพียง ~1.9 - 2.4 วินาที',
-    impact: 'ประหยัดเวลาในพิทเลน',
+    title: 'Sub-2s Tire Swap',
+    description: 'Stationary wheel change reduced to an elite ~1.9 - 2.4 seconds',
+    impact: 'Huge Pit Lane Savings',
     icon: '⏱️',
   },
   {
-    title: 'ออกตัวแซงในพิทไว',
-    description: 'ปลดแจ็คและปล่อยรถ Safe Release ทันที ชิงอันดับ (Undercut) ได้เปรียบ',
-    impact: 'กลับสู่การแข่งได้รวดเร็ว',
+    title: 'Rapid Safe Release',
+    description: 'Instant jack release and green-light launch to secure the pit undercut',
+    impact: 'Immediate Track Re-entry',
     icon: '🏎️',
   },
 ];

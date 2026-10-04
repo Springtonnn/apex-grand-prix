@@ -210,7 +210,7 @@ export const SeasonRouteWorldMap: React.FC<SeasonRouteWorldMapProps> = ({
               }`}
             >
               <Sparkles className={`w-3.5 h-3.5 ${isEuropeFocused ? 'text-black' : 'text-amber-400'}`} />
-              <span>{isEuropeFocused ? '🌍 SHOW ALL CONTINENTS (มุมมองโลก)' : '🔍 EXPAND EUROPE (ขยายมุมมองยุโรป)'}</span>
+              <span>{isEuropeFocused ? '🌍 SHOW ALL CONTINENTS' : '🔍 EXPAND EUROPE'}</span>
             </button>
           </div>
 

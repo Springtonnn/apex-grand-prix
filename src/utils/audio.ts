@@ -1745,7 +1745,7 @@ class SoundSystem {
     osc.stop(now + 0.45);
   }
 
-  // High-tension warning chime when rival catches right up to player's tail ("จี้ตูด")
+  // High-tension warning chime when rival catches right up to player's tail (Tailgating)
   public playRivalTailgateAlert() {
     if (this.isMuted) return;
     this.initCtx();
