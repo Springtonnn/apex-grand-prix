@@ -1,0 +1,121 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: 'Rajdhani', 'Chakra Petch', sans-serif;
+  }
+}
+
+/* Premium Checkered Flag Pattern */
+.bg-checkered-flag {
+  background-color: #0b0e14;
+  background-image: 
+    linear-gradient(45deg, rgba(255, 255, 255, 0.04) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(255, 255, 255, 0.04) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(255, 255, 255, 0.04) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(255, 255, 255, 0.04) 75%);
+  background-size: 40px 40px;
+  background-position: 0 0, 0 20px, 20px -20px, -20px 0px;
+}
+
+.bg-checkered-accent {
+  background-image: 
+    linear-gradient(45deg, #11151d 25%, transparent 25%),
+    linear-gradient(-45deg, #11151d 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #11151d 75%),
+    linear-gradient(-45deg, transparent 75%, #11151d 75%);
+  background-size: 24px 24px;
+  background-position: 0 0, 0 12px, 12px -12px, -12px 0px;
+}
+
+.bg-carbon {
+  background: radial-gradient(circle at 50% 0%, #171d26 0%, #0b0e14 75%);
+}
+
+.font-racing {
+  font-family: 'Rajdhani', sans-serif;
+}
+
+.font-telemetry {
+  font-family: 'Chakra Petch', monospace;
+}
+
+/* Custom glowing pulse for active race & upgrades */
+@keyframes neon-pulse {
+  0%, 100% { opacity: 0.8; filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.6)); }
+  50% { opacity: 1; filter: drop-shadow(0 0 16px rgba(239, 68, 68, 0.9)); }
+}
+
+.animate-neon-pulse {
+  animation: neon-pulse 2s infinite ease-in-out;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0f131a;
+}
+::-webkit-scrollbar-thumb {
+  background: #252e3d;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #dc2626;
+}
+
+/* Slim Racing Scrollbar for Standings & Telemetry (Red & Amber Accent) */
+.racing-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(220, 38, 38, 0.45) rgba(15, 20, 30, 0.6);
+}
+
+.racing-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+
+.racing-scrollbar::-webkit-scrollbar-track {
+  background: rgba(11, 15, 23, 0.7);
+  border-radius: 4px;
+  margin: 4px 0;
+}
+
+.racing-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(220, 38, 38, 0.6) 0%, rgba(245, 158, 11, 0.5) 100%);
+  border-radius: 4px;
+  border: 1px solid rgba(220, 38, 38, 0.2);
+}
+
+.racing-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #ef4444 0%, #f59e0b 100%);
+  box-shadow: 0 0 6px rgba(239, 68, 68, 0.6);
+}
+
+/* Hero F1 Car Animations */
+@keyframes heroCarFloat {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes heroWheelSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Touch controls only visible on coarse pointer touch devices (smartphones, tablets) */
+@media not (pointer: coarse) {
+  .touch-controls-coarse {
+    display: none !important;
+  }
+}
+
