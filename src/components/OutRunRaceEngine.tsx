@@ -149,26 +149,27 @@ export interface RoadsideSprite {
 }
 
 // Calculate accurate, tight collision hitboxes for ALL on-track & roadside objects
+// แก้ไข: ปรับ hitbox ให้สมจริง ไม่กว้างเกินจริง เพื่อป้องกันไม่ให้รถชนป้ายใหญ่/สิ่งกีดขวางโดยไม่สมควร
 export function getPropHitWidth(type: RoadsidePropType): number {
   switch (type) {
     case 'traffic_cone':
-      return 0.22; // Tight cone hitbox so players can weave closely between cones
+      return 0.14; // Tight cone hitbox so cars can weave closely between cones
     case 'road_barrier':
-      return 0.36; // Snug concrete barricade
+      return 0.18; // Realistic snug concrete barricade block (cars can comfortably pass through gates)
     case 'fallen_tree':
-      return 0.42; // Snug fallen log
+      return 0.20; // Snug fallen log
     case 'tire_stack':
-      return 0.30; // Snug tire pile
+      return 0.18; // Snug tire pile
     case 'oil_slick':
-      return 0.32; // Snug oil slick
+      return 0.20; // Snug oil slick
     case 'tire_barrier':
-      return 0.34;
+      return 0.18;
     case 'sponsor_billboard':
-      return 0.36;
+      return 0.10; // Realistic slim pole width for sponsor billboards
     case 'distance_marker':
-      return 0.26;
+      return 0.08;
     case 'safety_fence':
-      return 0.34;
+      return 0.10;
     case 'team_pitwall':
       return 0; // Pure decorative pit straight wall, non-collidable
     case 'pit_entry_sign':
@@ -176,29 +177,27 @@ export function getPropHitWidth(type: RoadsidePropType): number {
     case 'pit_box_crew':
       return 0; // Friendly team pit crew, non-collidable
     case 'f1_marshal_post':
-      return 0.32;
+      return 0.10;
     case 'track_light':
-      return 0.30;
+      return 0.10;
     case 'grandstand':
-      return 0.50;
+      return 0.15; // Set far off-track
     case 'palm_tree':
     case 'pine_tree':
     case 'green_tree':
-      return 0.34;
-    case 'drs_gantry':
-      return 0.32;
-    case 'cactus':
-      return 0.30;
-    case 'desert_rock':
-      return 0.42;
-    case 'city_building':
-      return 0.85; // Wide clearance for monumental skyscrapers
     case 'dry_tree':
-      return 0.32;
     case 'arid_pine':
-      return 0.30;
+      return 0.14; // Tree trunk
+    case 'drs_gantry':
+      return 0; // Overhead arch spanning over the road, completely non-collidable (cars drive underneath)
+    case 'cactus':
+      return 0.12;
+    case 'desert_rock':
+      return 0.18;
+    case 'city_building':
+      return 0.22;
     default:
-      return 0.28;
+      return 0.14;
   }
 }
 
@@ -5204,16 +5203,11 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
 
                 if (distToCar >= -zReachBack && distToCar <= zReachForward) {
                   // drs_gantry is an overhead bridge spanning across the track:
-                  // Driving safely down the track (|playerX| < 1.35) passes underneath.
-                  // Colliding with verge steel lattice towers (|playerX| >= 1.35) crashes.
                   if (sp.type === 'drs_gantry') {
-                    if (Math.abs(engine.playerX) < 1.35) {
-                      continue;
-                    }
+                    continue;
                   }
 
                   // When inside pit lane, servicing, entering pit entrance, or encountering pit props: completely immune to collisions!
-                  // "เหมือนว่าตอนเข้า pits มันจะชนวัตถุใน pits ไปมานะ แก้ไขให้ด้วย"
                   if (
                     engine.inPitLane ||
                     engine.pitState !== 'none' ||
@@ -5226,8 +5220,15 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
                     continue;
                   }
 
-                  const lateralDiff = Math.abs(engine.playerX - sp.offset);
+                  // Non-obstacle roadside scenery (billboards, grandstands, marshal posts) should never clip cars on track/kerbs
+                  if (!sp.isObstacle && Math.abs(engine.playerX) <= 1.55) {
+                    continue;
+                  }
+
                   const hitWidth = getPropHitWidth(sp.type);
+                  if (hitWidth <= 0) continue;
+
+                  const lateralDiff = Math.abs(engine.playerX - sp.offset);
                   if (lateralDiff < hitWidth) {
                     triggerPropCollision(sp);
                   }
@@ -5417,28 +5418,35 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
           const lookaheadSegs = ai.personalityKey === 'legendary_precision' ? 85 : ai.personalityKey === 'apex_predator' ? 80 : 75;
           const threatsAhead: TrackObstacleThreat[] = [];
 
-          // 1. Scan on-track track props and hazard obstacles
-          for (let sOff = 1; sOff <= lookaheadSegs; sOff++) {
-            const chkIdx = (aiSegIdx + sOff) % engine.segments.length;
-            const chkSeg = engine.segments[chkIdx];
-            if (chkSeg && chkSeg.sprites) {
-              for (let spI = 0; spI < chkSeg.sprites.length; spI++) {
-                const sp = chkSeg.sprites[spI];
-                // Only consider on-track or immediate verge hazards
-                if (Math.abs(sp.offset) < 1.15 && (isHazardProp(sp.type) || sp.isObstacle)) {
-                  let dZ = chkSeg.p1.world.z - ai.z;
-                  if (dZ < -engine.trackLength / 2) dZ += engine.trackLength;
-                  if (dZ > engine.trackLength / 2) dZ -= engine.trackLength;
-                  if (dZ > 0 && dZ <= 16000) {
-                    const hitW = getPropHitWidth(sp.type);
-                    const safeMargin = sp.type === 'oil_slick' ? 0.44 : sp.type === 'tire_stack' ? 0.40 : sp.type === 'road_barrier' ? 0.42 : 0.35;
-                    threatsAhead.push({
-                      dist: dZ,
-                      offset: sp.offset,
-                      hitWidth: hitW,
-                      type: sp.type,
-                      safeMargin,
-                    });
+          // Requirement: "ถ้า คู่แข่งบอทที่อยู่หลังจอผู้เล่นเท่านั้น อยู่ห่างจากผู้เล่น 150 เมตรหลังจอ ให้พวกเขาทะลุสิ่งกีดขวางมาได้"
+          // If AI is 150+ meters behind the player's screen (distToPlayer >= 15000), it phases cleanly through obstacles!
+          const isAiBehindPlayer150m = distToPlayer >= 15000;
+
+          if (!isAiBehindPlayer150m) {
+            // 1. Scan on-track track props and hazard obstacles
+            for (let sOff = 1; sOff <= lookaheadSegs; sOff++) {
+              const chkIdx = (aiSegIdx + sOff) % engine.segments.length;
+              const chkSeg = engine.segments[chkIdx];
+              if (chkSeg && chkSeg.sprites) {
+                for (let spI = 0; spI < chkSeg.sprites.length; spI++) {
+                  const sp = chkSeg.sprites[spI];
+                  // Only consider genuine on-track hazard obstacles
+                  if (Math.abs(sp.offset) < 1.05 && (isHazardProp(sp.type) || sp.isObstacle)) {
+                    let dZ = chkSeg.p1.world.z - ai.z;
+                    if (dZ < -engine.trackLength / 2) dZ += engine.trackLength;
+                    if (dZ > engine.trackLength / 2) dZ -= engine.trackLength;
+                    if (dZ > 0 && dZ <= 16000) {
+                      const hitW = getPropHitWidth(sp.type);
+                      if (hitW <= 0) continue;
+                      const safeMargin = sp.type === 'oil_slick' ? 0.28 : sp.type === 'tire_stack' ? 0.25 : sp.type === 'road_barrier' ? 0.24 : 0.20;
+                      threatsAhead.push({
+                        dist: dZ,
+                        offset: sp.offset,
+                        hitWidth: hitW,
+                        type: sp.type,
+                        safeMargin,
+                      });
+                    }
                   }
                 }
               }
@@ -6576,7 +6584,13 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
             }
           }
 
-          // AI obstacle collision touch check (AI clips obstacle: gets heavily slowed, stunned, and deflected)
+          // AI obstacle collision touch check (AI clips obstacle: gets slowed, stunned, and deflected)
+          // USER REQUIREMENT: "ถ้า คู่แข่งบอทที่อยู่หลังจอผู้เล่นเท่านั้น อยู่ห่างจากผู้เล่น 150 เมตรหลังจอ ให้พวกเขาทะลุสิ่งกีดขวางมาได้"
+          // When relZ <= -15000, AI car is 150+ meters behind the player's screen: phase cleanly through all obstacles!
+          if (relZ <= -15000) {
+            continue;
+          }
+
           const checkSegs = [
             aiSegIdx,
             (aiSegIdx + 1) % engine.segments.length,
@@ -6590,7 +6604,8 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
                 if (ai.lastObstacleHitUntil && nowMs < ai.lastObstacleHitUntil) {
                   continue;
                 }
-                if (sp.type === 'drs_gantry' && Math.abs(ai.x) < 1.25) continue;
+                // drs_gantry is an overhead bridge spanning across the track: cars drive freely underneath
+                if (sp.type === 'drs_gantry') continue;
                 if (
                   ai.isPitting ||
                   currentAiSeg.isPitLaneZone ||
@@ -6601,13 +6616,22 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
                   continue;
                 }
 
+                // Roadside scenery/props (billboards, grandstands, marshal posts) that are not on-track obstacles:
+                // If the car is on the track or rumble strips (Math.abs(ai.x) <= 1.55), it NEVER collides with roadside props!
+                if (!sp.isObstacle && Math.abs(ai.x) <= 1.55) {
+                  continue;
+                }
+
                 const hitW = getPropHitWidth(sp.type);
+                if (hitW <= 0) continue;
+
                 const latDiff = Math.abs(ai.x - sp.offset);
                 let dZ = currentAiSeg.p1.world.z - ai.z;
                 if (dZ < -engine.trackLength / 2) dZ += engine.trackLength;
                 if (dZ > engine.trackLength / 2) dZ -= engine.trackLength;
 
-                if (Math.abs(dZ) < 85 && latDiff < hitW + 0.08) {
+                // Accurate, realistic hitbox check without oversized artificial bloating
+                if (Math.abs(dZ) < 65 && latDiff < hitW) {
                   ai.lastObstacleHitUntil = nowMs + 1800;
                   ai.lastObstacleHitType = sp.type;
                   sp.hit = true;
@@ -6652,15 +6676,15 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
                   // Damage to AI rival car from obstacle ("ถ้ารถคู่แข่งพังก็ให้ขึ้นไฟไหม้ และอยู่เฉยๆ")
                   if (!ai.isDnf) {
                     const obsDamage =
-                      sp.type === 'road_barrier' || sp.type === 'fallen_tree' || sp.type === 'grandstand'
-                        ? 28
+                      sp.type === 'road_barrier' || sp.type === 'fallen_tree'
+                        ? 20
                         : sp.type === 'tire_stack' || sp.type === 'tire_barrier'
-                        ? 18
-                        : 10;
+                        ? 14
+                        : 8;
                     ai.health = Math.max(0, (ai.health ?? 100) - obsDamage);
-                    const isSevereWreck =
-                      ai.health <= 0 ||
-                      (ai.speed > 210 && (sp.type === 'road_barrier' || sp.type === 'grandstand' || sp.type === 'fallen_tree'));
+                    // Severe wreck only occurs if car health actually drops to 0!
+                    // (Fixed: removed unrealistic 210 km/h 1-hit insta-fire kill that caused all tail-end AI to wipe out)
+                    const isSevereWreck = ai.health <= 0;
                     if (isSevereWreck) {
                       ai.health = 0;
                       ai.isFire = true;
@@ -7588,7 +7612,7 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
             const playerCarScreenY = PLAYER_CAR_Y;
             if (racePhase === 'racing' && (!sp.playerHitUntil || nowMs > sp.playerHitUntil)) {
               if (y1 >= playerCarScreenY - 45 && y1 <= playerCarScreenY + 28) {
-                if (sp.type === 'drs_gantry' && Math.abs(engine.playerX) < 1.35) {
+                if (sp.type === 'drs_gantry') {
                   // Safe clearance underneath gantry overhead arch
                 } else if (
                   engine.inPitLane ||
@@ -7600,11 +7624,13 @@ export const OutRunRaceEngine: React.FC<OutRunRaceEngineProps> = ({
                   sp.type === 'team_pitwall'
                 ) {
                   // Safe clearance in pit lane - completely immune to collisions inside pit lane!
+                } else if (!sp.isObstacle && Math.abs(engine.playerX) <= 1.55) {
+                  // Non-obstacle roadside scenery (billboards, grandstands) never clips cars on track
                 } else {
                   const spScreenX = x1 + sp.offset * w1;
                   const carScreenX = width / 2;
                   const hitThreshold = w1 * getPropHitWidth(sp.type);
-                  if (Math.abs(spScreenX - carScreenX) < hitThreshold) {
+                  if (hitThreshold > 0 && Math.abs(spScreenX - carScreenX) < hitThreshold) {
                     triggerPropCollision(sp);
                   }
                 }
