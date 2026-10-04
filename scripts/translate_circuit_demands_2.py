@@ -1,0 +1,66 @@
+with open('src/data/circuitDemands.ts', 'r', encoding='utf-8') as f:
+    lines = f.readlines()
+
+new_lines = []
+for l in lines:
+    l = l.replace('สตรีทแทร็กความเร็วสูงริมแม่น้ำเจ้าพระยา เลียบพระบรมมหาราชวังและวัดอรุณ', 'High-speed street track along Chao Phraya River, past the Grand Palace and Wat Arun.')
+    l = l.replace('สตรีทเซอร์กิตริมน้ำกั้นกำแพงคอนกรีต ต้องการความคล่องตัวของ Chassis และความแม่นยำของ Brakes', 'Riverside street circuit flanked by concrete barriers requires Chassis agility and Brakes precision.')
+    l = l.replace('อเล็กซ์ อัลบูน (Alex Alboon) และทีมชั้นนำจะดุดันเป็นพิเศษในเรซประเทศไทยเพื่อแฟนความเร็ว', 'Alex Alboon and top championship contenders will attack aggressively for home fans in Thailand.')
+    l = l.replace('สนามตำนาน โค้งต่อเชื่อมความเร็วสูง Maggotts-Becketts-Chapel', 'Legendary circuit featuring the high-speed Maggotts-Becketts-Chapel complex.')
+    l = l.replace('Aero และ Suspension สำคัญที่สุดในการแบกความเร็วทะลุชุดโค้งต่อเนื่องโดยไม่หลุดไลน์', 'Aero and Suspension are essential to carry maximum speed through continuous sweepers.')
+    l = l.replace('Silver Arrow และ MacLaren จะเร็วเป็นพิเศษในสนามบ้านเกิด ต้องมี Aero ระดับ 80+ เพื่อสู้ได้สูสี', 'Silver Arrow and MacLaren will be rapid on home turf; Aero 80+ is needed to challenge them.')
+    l = l.replace('การขึ้นเนินชันทดสอบแรงม้าและแรงบิดโดยตรง อัพเกรด Engine เพื่อไม่ให้เสียความเร็วตอนไต่เนิน', 'Steep inclines directly test horsepower and torque; upgrade Engine PU to maintain climbing velocity.')
+    l = l.replace('หากพลังเครื่องยนต์ไม่ถึง 85+ OVR คุณจะถูกคู่แข่งเปิด DRS แซงผ่านบนทางตรง Kemmel อย่างง่ายดาย', 'If Engine PU is under 85+ OVR, rivals will easily draft and breeze past on Kemmel Straight with DRS.')
+    l = l.replace('ช่วงล่าง Suspension รับภาระแรงกดมหาศาลในโค้งเอียง ช่วยให้รถทรงตัวนิ่งและเร่งออกโค้งได้ดี', 'Suspension absorbs massive G-forces on banking, stabilizing the car for explosive corner exits.')
+    l = l.replace('วิหารแห่งความเร็ว วิ่งคันเร่งเต็ม 80% ของแทร็ก ทางตรงยาวที่สุด', 'The Temple of Speed. 80% full throttle per lap with the longest straights.')
+    l = l.replace('ไฟลต์บังคับ! ต้องอัพเกรด Engine & Aero ให้แตะระดับ 88+ เพื่อทำความเร็วปลายทะลุ 365+ km/h', 'Mandatory upgrade: bring Engine & Aero to 88+ OVR to exceed 365+ km/h top speed.')
+    l = l.replace('Scuderia Cavallo และ Red Bullion นำเครื่องยนต์สเปกสูงสุดมาลงแข่ง ความเร็วทางตรงจะสูสีมาก', 'Scuderia Cavallo and Red Bullion bring top-tier engines; straight-line battles will be fierce.')
+    l = l.replace('ต้องการแชสซีส์ที่คล่องตัวสูงในการเปลี่ยนทิศทางฉับไว และเบรกที่คงทนเพื่อเลี้ยวสกัดคู่แข่ง', 'Demands agile Chassis responsiveness for rapid changes of direction and durable Brakes.')
+    l = l.replace('การแข่งขันกลางคืนมีกำแพงประชิดตลอดเส้นทาง ความผิดพลาดเพียงนิดเดียวจะเสียอันดับทันที', 'Night racing with zero runoff margins; a momentary slip will cost several positions instantly.')
+    l = l.replace('Aero และ Chassis ต้องทำงานประสานกันอย่างสมบูรณ์แบบเพื่อไม่ให้เสียโมเมนตัมใน S-Curves', 'Aero and Chassis must coordinate seamlessly to maintain high momentum through the Esses.')
+    l = l.replace('คู่แข่งระดับท็อป 4 คันวิ่งประกบติดด้วยความเร็วเฉลี่ย 375 km/h พร้อมจังหวะเข้าโค้งที่เฉียบคม', 'Top rivals run in a tight pack averaging 375 km/h with surgical cornering precision.')
+    l = l.replace('ขึ้นเนิน Turn 1 มุมมองบอด และทางตรงหลังยาว 1.2 กิโลเมตร', 'Steep blind crest into Turn 1 followed by an enormous 1.2-kilometer back straight.')
+    l = l.replace('อัพเกรด Engine สำหรับทางตรงยาว และ Suspension รองรับพื้นผิวเป็นลอนคลื่นของ COTA', 'Upgrade Engine for the long straight and Suspension to absorb bumpy COTA surface undulations.')
+    l = l.replace('คู่แข่งจะใช้ DRS และจังหวะบูสต์ไล่ล่าอย่างไม่ลดละ หากรถช้าจะโดนแซงรูด', 'Rivals utilize DRS and nitro boosts relentlessly; underpowered cars will get swarmed.')
+    l = l.replace('สูงกว่าระดับน้ำทะเล 2,200 เมตร อากาศเบาบาง แรงกดตามธรรมชาติลดลง 25%', '2,200 meters above sea level: thin air reduces natural downforce by 25%.')
+    l = l.replace('ต้องอัพเกรด Aero สเปกสูงสุดเพื่อสร้างแรงกดทดแทนอากาศเบาบาง และ Engine เพื่อชดเชยออกซิเจน', 'Requires high Aero downforce to compensate for thin air and Engine tuning for oxygen loss.')
+    l = l.replace('ความเร็วปลายบนทางตรงยาวแตะ 380+ km/h รถที่มีแอร์โรต่ำจะลื่นไถลควบคุมไม่อยู่', 'Straight-line top speed reaches 380+ km/h; cars with weak aero will slide out of control.')
+    l = l.replace('สนามวิ่งทวนเข็มนาฬิกา เนินลูกคลื่นและโค้ง Esse S อันโด่งดัง', 'Anticlockwise circuit with undulating elevations and the famed Senna Esses.')
+    l = l.replace('การเข้าโค้ง Esse S บนทางลงเขาต้องการ Suspension และ Engine ที่ตอบสนองฉับไวเพื่อขึ้นเนิน', 'Downhill Senna Esses demand agile Suspension, followed by punchy Engine torque for the climb.')
+    l = l.replace('การขับเคี่ยวเข้าสู่ช่วงชี้ชะตาแชมป์โลก คู่แข่งจะโจมตีทุกจุดเปิดและประกบติดท้าย', 'Championship decider phase: rivals dive into every gap and tailgate relentlessly.')
+    l = l.replace('ทางตรง Strip ความเร็วทะลุ 385+ km/h กลางแสงสีนีออนและอากาศหนาว', 'The Strip straight delivers 385+ km/h blast through neon lights and cold desert air.')
+    l = l.replace('ทางตรงยาวมหาศาลต้องการ Engine สูงสุด 95+ OVR และ Brakes เกรดท็อปเพื่อหยุดรถก่อนเลี้ยว', 'Massive straight demands 95+ OVR Engine PU and top-grade Brakes before heavy 90-degree stops.')
+    l = l.replace('คู่แข่งวิ่งด้วยความเร็วเกิน 385 km/h บนทางตรง หากรถคุณยังไม่อัพเกรดจะตามไม่ทัน', 'Rivals exceed 385 km/h along the Strip; unupgraded cars will get left behind.')
+    l = l.replace('แข่งใต้แสงไฟสปอตไลท์ ทางตรงยาว 2 สเตจและเซกเตอร์โรงแรมหรู', 'Twilight night race with two long straight stages sweeping past luxury marina sectors.')
+    l = l.replace('สนามรองสุดท้ายของฤดูกาล ชิ้นส่วนรถต้องแตะระดับ 95-98 OVR ทุกชิ้นเพื่อลุ้นคว้าแต้มแชมป์', 'Penultimate round: every car department must reach 95-98 OVR to fight for title points.')
+    l = l.replace('คู่แข่งขับด้วยความเร็วระดับแชมเปียนชิป DRS ทุกจุดเปิดใช้งานอย่างเต็มประสิทธิภาพ', 'Rivals unleash championship-level racecraft, utilizing all DRS zones with maximum potency.')
+    l = l.replace('สนามปิดฉากฤดูกาล ริมชายฝั่งมหาสมุทรแอตแลนติก โค้งความเร็วสูงและทางตรงเลียบหาด', 'Season finale along the Atlantic coast, featuring ultra high-speed curves and seaside straights.')
+    l = l.replace('รอบชิงชนะเลิศระดับโลก! รถต้องอัพเกรดเต็มสูบ (95-99 OVR ทุกจุด) และขับอย่างสมบูรณ์แบบ', 'World Championship Finale! Cars must be maxed out (95-99 OVR) with flawless driving required.')
+    l = l.replace('คู่แข่งทุกคนปลดล็อกสมรรถนะสูงสุด วิ่งแตะ 395-405 km/h ด้วยความดุดันระดับตำนาน', 'All rivals unlock maximum performance, touching 395-405 km/h with legendary aggression.')
+
+    l = l.replace("title: 'ได้เปรียบสมรรถนะ (Car Advantage)',", "title: 'Car Performance Advantage',")
+    l = l.replace("มีโอกาสคว้าชัยชนะและโพเดียมสูงมาก!", "High winning and podium probability!")
+    l = l.replace("เหนือกว่าค่าเฉลี่ยคู่แข่ง", "outpaces rival benchmark")
+    l = l.replace("รถของคุณ", "Your car")
+
+    l = l.replace("title: 'สมรรถนะสูสี (Competitive Match)',", "title: 'Competitive Match',")
+    l = l.replace("อยู่ในเกณฑ์สูสีกับคู่แข่ง", "is evenly matched with rivals")
+    l = l.replace("ต้องอาศัยฝีมือการขับขี่และการเข้าพิทเพื่อชิงอันดับ", "Victory hinges on driver racecraft and pit execution.")
+
+    l = l.replace("title: 'เริ่มเสียเปรียบ (Slightly Underpowered)',", "title: 'Slightly Underpowered',")
+    l = l.replace("ตามหลังคู่แข่ง", "trails rivals")
+    l = l.replace("อยู่", "by")
+    l = l.replace("แต้ม แนะนำให้อัพเกรด", "points. Priority upgrade:")
+    l = l.replace("ก่อนลงแข่ง", "before the race.")
+
+    l = l.replace("title: 'เสียเปรียบอย่างหนัก! ต้องอัพเกรดด่วน (Critical Upgrade Needed)',", "title: 'Critical Performance Deficit - Upgrade Required',")
+    l = l.replace("ต่ำกว่าคู่แข่ง", "lags behind rivals")
+    l = l.replace("มากถึง", "by")
+    l = l.replace("แต้ม รถจะช้ากว่าอย่างเห็นได้ชัด รีบอัพเกรดด่วน!", "points. Significant speed disadvantage! Upgrade immediately!")
+
+    new_lines.append(l)
+
+with open('src/data/circuitDemands.ts', 'w', encoding='utf-8') as f:
+    f.writelines(new_lines)
+
+print('Translated circuit demands 2')
